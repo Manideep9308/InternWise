@@ -13,6 +13,12 @@ import { Logo } from '@/components/logo';
 export default function SignupPage() {
   const router = useRouter();
 
+  const handleStudentSignup = () => {
+    // Clear any potentially stale profile data before starting the creation flow.
+    localStorage.removeItem('studentProfile');
+    router.push('/upload-resume');
+  };
+
   return (
     <div className="container relative flex-grow flex-col items-center justify-center py-12 md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
       <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
@@ -65,7 +71,7 @@ export default function SignupPage() {
                     <Label htmlFor="student-password">Password</Label>
                     <Input id="student-password" type="password" required />
                   </div>
-                  <Button onClick={() => router.push('/upload-resume')} className="w-full">
+                  <Button onClick={handleStudentSignup} className="w-full">
                     Create Student Account
                   </Button>
                 </CardContent>

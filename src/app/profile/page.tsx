@@ -23,31 +23,21 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<StudentProfile>(initialProfile);
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
-  const router = useRouter();
 
   useEffect(() => {
-    // This page should only be accessible if a profile exists.
-    // The login/signup flow handles routing to resume-upload if needed.
+    // On component mount, try to load the profile from localStorage.
     const storedProfileData = localStorage.getItem('studentProfile');
     if (storedProfileData) {
       try {
         const storedProfile = JSON.parse(storedProfileData);
-        // Ensure the stored profile is not empty
-        if (storedProfile.name || storedProfile.email) {
-            setProfile(storedProfile);
-        } else {
-            // If the stored profile is empty, redirect to start the process over.
-            router.push('/upload-resume');
-        }
+        setProfile(storedProfile);
       } catch (e) {
-          console.error("Failed to parse student profile, redirecting.", e);
-          router.push('/upload-resume');
+          console.error("Failed to parse student profile from localStorage", e);
+          // If data is corrupt, start with a clean slate.
+          setProfile(initialProfile);
       }
-    } else {
-        // If no profile is stored at all, redirect to create one.
-        router.push('/upload-resume');
     }
-  }, [router]);
+  }, []); // Run only once on mount.
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
