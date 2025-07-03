@@ -2,15 +2,15 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Logo } from '@/components/logo';
-import { useRouter } from 'next/navigation';
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
 
   return (
@@ -37,10 +37,10 @@ export default function LoginPage() {
         <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
           <div className="flex flex-col space-y-2 text-center">
             <h1 className="text-2xl font-semibold tracking-tight">
-              Welcome Back
+              Create an account
             </h1>
             <p className="text-sm text-muted-foreground">
-              Log in to continue your journey with InternWise.
+              Enter your details below to create your account.
             </p>
           </div>
           
@@ -54,20 +54,19 @@ export default function LoginPage() {
               <Card className="border-0 shadow-none">
                 <CardContent className="space-y-4 pt-6">
                   <div className="grid gap-2">
+                    <Label htmlFor="student-name">Full Name</Label>
+                    <Input id="student-name" type="text" placeholder="John Doe" required />
+                  </div>
+                  <div className="grid gap-2">
                     <Label htmlFor="student-email">Email</Label>
                     <Input id="student-email" type="email" placeholder="student@example.com" required />
                   </div>
                   <div className="grid gap-2">
-                    <div className="flex items-center">
-                      <Label htmlFor="student-password">Password</Label>
-                      <Link href="#" className="ml-auto inline-block text-sm underline">
-                        Forgot your password?
-                      </Link>
-                    </div>
+                    <Label htmlFor="student-password">Password</Label>
                     <Input id="student-password" type="password" required />
                   </div>
                   <Button onClick={() => router.push('/profile')} className="w-full">
-                    Login as Student
+                    Create Student Account
                   </Button>
                 </CardContent>
               </Card>
@@ -77,20 +76,19 @@ export default function LoginPage() {
               <Card className="border-0 shadow-none">
                   <CardContent className="space-y-4 pt-6">
                       <div className="grid gap-2">
+                        <Label htmlFor="employer-name">Company Name</Label>
+                        <Input id="employer-name" type="text" placeholder="Innovate Inc." required />
+                      </div>
+                      <div className="grid gap-2">
                           <Label htmlFor="employer-email">Company Email</Label>
                           <Input id="employer-email" type="email" placeholder="hr@company.com" required />
                       </div>
                       <div className="grid gap-2">
-                        <div className="flex items-center">
-                            <Label htmlFor="employer-password">Password</Label>
-                            <Link href="#" className="ml-auto inline-block text-sm underline">
-                            Forgot your password?
-                            </Link>
-                        </div>
+                        <Label htmlFor="employer-password">Password</Label>
                         <Input id="employer-password" type="password" required />
                       </div>
                       <Button onClick={() => router.push('/post-internship')} className="w-full">
-                          Login as Employer
+                          Create Employer Account
                       </Button>
                   </CardContent>
               </Card>
@@ -98,12 +96,12 @@ export default function LoginPage() {
           </Tabs>
 
           <p className="px-8 text-center text-sm text-muted-foreground">
-            Don&apos;t have an account?{" "}
+            Already have an account?{" "}
             <Link
-              href="/signup"
+              href="/login"
               className="underline underline-offset-4 hover:text-primary"
             >
-              Sign Up
+              Log In
             </Link>
           </p>
         </div>
