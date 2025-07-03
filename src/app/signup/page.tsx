@@ -65,7 +65,7 @@ export default function SignupPage() {
                     <Label htmlFor="student-password">Password</Label>
                     <Input id="student-password" type="password" required />
                   </div>
-                  <Button onClick={() => router.push('/profile')} className="w-full">
+                  <Button onClick={() => router.push('/upload-resume')} className="w-full">
                     Create Student Account
                   </Button>
                 </CardContent>

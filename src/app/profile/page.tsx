@@ -1,18 +1,41 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import type { StudentProfile } from '@/lib/types';
 import { mockStudentProfile } from '@/lib/mock-data';
 
+const initialProfile: StudentProfile = {
+  name: '',
+  email: '',
+  education: '',
+  skills: '',
+  about: '',
+};
+
 export default function ProfilePage() {
-  const [profile, setProfile] = useState(mockStudentProfile);
+  const [profile, setProfile] = useState<StudentProfile>(initialProfile);
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Check for parsed profile data from the upload page
+    const parsedProfileData = localStorage.getItem('parsedProfile');
+    if (parsedProfileData) {
+      setProfile(JSON.parse(parsedProfileData));
+      // Clean up local storage
+      localStorage.removeItem('parsedProfile');
+    } else {
+      // Fallback to mock data if no parsed data is found
+      // In a real app, this would fetch user data from a DB
+      setProfile(mockStudentProfile);
+    }
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -44,7 +67,7 @@ export default function ProfilePage() {
           <Card>
             <CardHeader>
               <CardTitle>Personal Information</CardTitle>
-              <CardDescription>This information will be used to auto-fill applications.</CardDescription>
+              <CardDescription>This information will be used to auto-fill applications and find matching internships.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -73,7 +96,7 @@ export default function ProfilePage() {
               <div className="space-y-2">
                 <Label htmlFor="resume">Resume</Label>
                 <Input id="resume" type="file" />
-                <p className="text-xs text-muted-foreground">Upload your latest resume (PDF, DOCX). This is a UI-only feature.</p>
+                <p className="text-xs text-muted-foreground">Upload a new resume to update your profile (UI-only).</p>
               </div>
               <Button type="submit" disabled={isSaving}>
                 {isSaving ? 'Saving...' : 'Save Changes'}
