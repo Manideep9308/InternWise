@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -47,8 +48,8 @@ export default function UploadResumePage() {
       const resumeDataUri = await fileToDataUri(file);
       const result = await analyzeResume({ resumeDataUri });
       
-      // Store result in localStorage to pass to profile page
-      localStorage.setItem('parsedProfile', JSON.stringify(result));
+      // Store result directly in the main student profile
+      localStorage.setItem('studentProfile', JSON.stringify(result));
 
       toast({
         title: 'Analysis Complete!',

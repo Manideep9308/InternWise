@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import type { StudentProfile } from '@/lib/types';
-import { mockStudentProfile } from '@/lib/mock-data';
+import { useRouter } from 'next/navigation';
 
 const initialProfile: StudentProfile = {
   name: '',
@@ -23,25 +23,31 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<StudentProfile>(initialProfile);
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
-    // This is the flow from the resume upload page
-    const parsedProfileData = localStorage.getItem('parsedProfile');
-    if (parsedProfileData) {
-      const parsedProfile = JSON.parse(parsedProfileData);
-      setProfile(parsedProfile);
-      // Persist the profile for the session
-      localStorage.setItem('studentProfile', JSON.stringify(parsedProfile));
-      localStorage.removeItem('parsedProfile');
-    } else {
-      // This is the flow for a returning user (or direct navigation)
-      const storedProfileData = localStorage.getItem('studentProfile');
-      if (storedProfileData) {
-        setProfile(JSON.parse(storedProfileData));
+    // This page should only be accessible if a profile exists.
+    // The login/signup flow handles routing to resume-upload if needed.
+    const storedProfileData = localStorage.getItem('studentProfile');
+    if (storedProfileData) {
+      try {
+        const storedProfile = JSON.parse(storedProfileData);
+        // Ensure the stored profile is not empty
+        if (storedProfile.name || storedProfile.email) {
+            setProfile(storedProfile);
+        } else {
+            // If the stored profile is empty, redirect to start the process over.
+            router.push('/upload-resume');
+        }
+      } catch (e) {
+          console.error("Failed to parse student profile, redirecting.", e);
+          router.push('/upload-resume');
       }
-      // If no stored profile, it will just use `initialProfile`, which is empty.
+    } else {
+        // If no profile is stored at all, redirect to create one.
+        router.push('/upload-resume');
     }
-  }, []);
+  }, [router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
