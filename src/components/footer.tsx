@@ -31,6 +31,7 @@ export function Footer() {
               <ul className="space-y-2 mt-4 text-sm">
                 <li><Link href="/internships" className="text-foreground/70 hover:text-primary">Find Internships</Link></li>
                 <li><Link href="/ai-coach" className="text-foreground/70 hover:text-primary">AI Interview Coach</Link></li>
+                <li><Link href="/hiring-manager-simulator" className="text-foreground/70 hover:text-primary">Resume Review</Link></li>
                 <li><Link href="/profile" className="text-foreground/70 hover:text-primary">My Profile</Link></li>
                 <li><Link href="#" className="text-foreground/70 hover:text-primary">My Applications</Link></li>
               </ul>
