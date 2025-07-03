@@ -15,12 +15,19 @@ export default function LoginPage() {
 
   const handleStudentLogin = () => {
     // In a real app, you'd authenticate here.
-    // For this prototype, we'll check if a profile exists to guide the user.
+    // For this prototype, we'll check if a populated profile exists to guide the user.
     const storedProfileData = localStorage.getItem('studentProfile');
     if (storedProfileData) {
-      router.push('/profile');
+      const profile = JSON.parse(storedProfileData);
+      // Check if the profile has actual data, not just an empty object from a previous visit.
+      if (profile.name && profile.email) {
+        router.push('/profile');
+      } else {
+        // If the profile is empty, guide user to upload resume.
+        router.push('/upload-resume');
+      }
     } else {
-      // If no profile exists, user is guided to create one.
+      // If no profile exists at all, user is guided to create one.
       router.push('/upload-resume');
     }
   };
