@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -24,16 +25,21 @@ export default function ProfilePage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check for parsed profile data from the upload page
+    // This is the flow from the resume upload page
     const parsedProfileData = localStorage.getItem('parsedProfile');
     if (parsedProfileData) {
-      setProfile(JSON.parse(parsedProfileData));
-      // Clean up local storage
+      const parsedProfile = JSON.parse(parsedProfileData);
+      setProfile(parsedProfile);
+      // Persist the profile for the session
+      localStorage.setItem('studentProfile', JSON.stringify(parsedProfile));
       localStorage.removeItem('parsedProfile');
     } else {
-      // Fallback to mock data if no parsed data is found
-      // In a real app, this would fetch user data from a DB
-      setProfile(mockStudentProfile);
+      // This is the flow for a returning user (or direct navigation)
+      const storedProfileData = localStorage.getItem('studentProfile');
+      if (storedProfileData) {
+        setProfile(JSON.parse(storedProfileData));
+      }
+      // If no stored profile, it will just use `initialProfile`, which is empty.
     }
   }, []);
 
@@ -47,6 +53,8 @@ export default function ProfilePage() {
     setIsSaving(true);
     // Simulate saving to a backend
     setTimeout(() => {
+      // Also save to localStorage for persistence in the prototype
+      localStorage.setItem('studentProfile', JSON.stringify(profile));
       setIsSaving(false);
       toast({
         title: 'Profile Saved!',

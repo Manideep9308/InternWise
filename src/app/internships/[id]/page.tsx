@@ -1,11 +1,11 @@
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { mockInternships, mockStudentProfile } from '@/lib/mock-data';
+import { mockInternships } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Briefcase, MapPin, DollarSign, Calendar, Users, CheckCircle, FileText } from 'lucide-react';
-import { CoverLetterGenerator } from '@/components/cover-letter-generator';
+import { CoverLetterGeneratorLoader } from '@/components/cover-letter-generator-loader';
 import { Separator } from '@/components/ui/separator';
 
 export default function InternshipDetailPage({ params }: { params: { id: string } }) {
@@ -98,9 +98,8 @@ export default function InternshipDetailPage({ params }: { params: { id: string 
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CoverLetterGenerator 
+                  <CoverLetterGeneratorLoader
                     jobDescription={internship.description} 
-                    studentProfile={mockStudentProfile}
                   />
                 </CardContent>
              </Card>

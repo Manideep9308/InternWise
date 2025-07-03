@@ -1,6 +1,4 @@
-import { InterviewCoachChat } from '@/components/interview-coach-chat';
-import { mockInternships, mockStudentProfile } from '@/lib/mock-data';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { AiCoachLoader } from '@/components/ai-coach-loader';
 import { Bot } from 'lucide-react';
 
 export default function AiCoachPage() {
@@ -17,10 +15,7 @@ export default function AiCoachPage() {
       </div>
 
       <div className="max-w-4xl mx-auto">
-        <InterviewCoachChat 
-          studentProfile={mockStudentProfile}
-          internships={mockInternships}
-        />
+        <AiCoachLoader />
       </div>
     </div>
   );
