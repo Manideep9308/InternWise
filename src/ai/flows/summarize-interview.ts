@@ -16,14 +16,14 @@ const MessageSchema = z.object({
     content: z.string(),
 });
 
-export const SummarizeInterviewInputSchema = z.object({
+const SummarizeInterviewInputSchema = z.object({
   studentProfile: z.string().describe('The student profile information including skills and experience.'),
   selectedInternship: z.string().describe('The description of the selected internship including required skills.'),
   conversationHistory: z.array(MessageSchema).describe('The full conversation history between the user and the AI coach.'),
 });
 export type SummarizeInterviewInput = z.infer<typeof SummarizeInterviewInputSchema>;
 
-export const SummarizeInterviewOutputSchema = z.object({
+const SummarizeInterviewOutputSchema = z.object({
   summary: z.string().describe('A detailed summary of the student\'s interview performance, including strengths, weaknesses, and suggestions for improvement. Format this as markdown.'),
 });
 export type SummarizeInterviewOutput = z.infer<typeof SummarizeInterviewOutputSchema>;
