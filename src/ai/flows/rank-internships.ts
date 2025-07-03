@@ -28,7 +28,7 @@ const InternshipSchema = z.object({
   logo: z.string(),
 });
 
-export const RankInternshipsInputSchema = z.object({
+const RankInternshipsInputSchema = z.object({
   studentProfile: z
     .string()
     .describe(
@@ -49,7 +49,7 @@ const RankedInternshipSchema = z.object({
     ),
 });
 
-export const RankInternshipsOutputSchema = z.object({
+const RankInternshipsOutputSchema = z.object({
   recommendations: z
     .array(RankedInternshipSchema)
     .describe(
