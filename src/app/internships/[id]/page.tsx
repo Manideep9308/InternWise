@@ -1,18 +1,64 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { mockInternships } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Briefcase, MapPin, DollarSign, Calendar, Users, CheckCircle, FileText } from 'lucide-react';
 import { CoverLetterGeneratorLoader } from '@/components/cover-letter-generator-loader';
-import { Separator } from '@/components/ui/separator';
+import { getInternshipById } from '@/lib/internship-data-manager';
+import type { Internship } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function InternshipDetailPage({ params }: { params: { id: string } }) {
-  const internship = mockInternships.find(i => i.id === params.id);
+  const [internship, setInternship] = useState<Internship | null | undefined>(null);
 
-  if (!internship) {
+  useEffect(() => {
+    const foundInternship = getInternshipById(params.id);
+    setInternship(foundInternship);
+  }, [params.id]);
+
+  if (internship === undefined) {
     notFound();
+  }
+
+  if (internship === null) {
+      return (
+        <div className="bg-secondary">
+          <div className="container mx-auto py-12 px-4">
+            <Card className="mb-8 overflow-hidden">
+                <div className="bg-primary/10 p-8">
+                    <div className="flex flex-col md:flex-row items-start gap-6">
+                        <Skeleton className="h-[100px] w-[100px] rounded-xl" />
+                        <div className="flex-grow space-y-4">
+                            <Skeleton className="h-10 w-3/4" />
+                            <Skeleton className="h-6 w-1/2" />
+                            <div className="flex flex-wrap items-center gap-4 mt-4">
+                                <Skeleton className="h-6 w-24" />
+                                <Skeleton className="h-6 w-24" />
+                                <Skeleton className="h-6 w-24" />
+                            </div>
+                        </div>
+                        <div className="w-full md:w-auto flex-shrink-0">
+                            <Skeleton className="h-12 w-32" />
+                        </div>
+                    </div>
+                </div>
+            </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 space-y-8">
+                    <Skeleton className="h-48 w-full" />
+                    <Skeleton className="h-48 w-full" />
+                </div>
+                <div className="space-y-8">
+                    <Skeleton className="h-72 w-full" />
+                </div>
+            </div>
+        </div>
+      </div>
+      );
   }
 
   return (

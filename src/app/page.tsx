@@ -1,14 +1,10 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, Bot, FileText, Briefcase } from 'lucide-react';
-import { InternshipCard } from '@/components/internship-card';
-import { mockInternships } from '@/lib/mock-data';
+import { FeaturedInternships } from '@/components/featured-internships';
 
 export default function Home() {
-  const featuredInternships = mockInternships.slice(0, 3);
-
   return (
     <div className="flex flex-col items-center">
       {/* Hero Section */}
@@ -75,21 +71,7 @@ export default function Home() {
       </section>
       
       {/* Featured Internships */}
-      <section className="w-full py-20 md:py-28 bg-secondary">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center font-headline">Featured Internships</h2>
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredInternships.map((internship) => (
-              <InternshipCard key={internship.id} internship={internship} />
-            ))}
-          </div>
-          <div className="text-center mt-12">
-            <Link href="/internships" passHref>
-              <Button variant="outline">View All Internships</Button>
-            </Link>
-          </div>
-        </div>
-      </section>
+      <FeaturedInternships />
     </div>
   );
 }

@@ -1,30 +1,62 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { InternshipCard } from '@/components/internship-card';
-import { mockInternships } from '@/lib/mock-data';
-import { Search, MapPin, Briefcase, DollarSign } from 'lucide-react';
+import { Search, MapPin, Briefcase } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { getInternships } from '@/lib/internship-data-manager';
+import type { Internship } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function InternshipsPage() {
+  const [allInternships, setAllInternships] = useState<Internship[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [location, setLocation] = useState('all');
   const [domain, setDomain] = useState('all');
 
-  const domains = useMemo(() => ['all', ...Array.from(new Set(mockInternships.map(i => i.domain)))], []);
-  const locations = useMemo(() => ['all', ...Array.from(new Set(mockInternships.map(i => i.location)))], []);
+  useEffect(() => {
+    setAllInternships(getInternships());
+    setIsLoading(false);
+  }, []);
+
+  const domains = useMemo(() => ['all', ...Array.from(new Set(allInternships.map(i => i.domain)))], [allInternships]);
+  const locations = useMemo(() => ['all', ...Array.from(new Set(allInternships.map(i => i.location)))], [allInternships]);
 
   const filteredInternships = useMemo(() => {
-    return mockInternships.filter(internship => {
+    return allInternships.filter(internship => {
       const searchTermMatch = internship.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             internship.company.toLowerCase().includes(searchTerm.toLowerCase());
       const locationMatch = location === 'all' || internship.location === location;
       const domainMatch = domain === 'all' || internship.domain === domain;
       return searchTermMatch && locationMatch && domainMatch;
     });
-  }, [searchTerm, location, domain]);
+  }, [searchTerm, location, domain, allInternships]);
+
+  if (isLoading) {
+      return (
+          <div className="container mx-auto py-12 px-4">
+               <div className="text-center mb-12">
+                    <Skeleton className="h-12 w-1/2 mx-auto" />
+                    <Skeleton className="h-6 w-3/4 mx-auto mt-4" />
+                </div>
+                <Card className="mb-8">
+                    <CardContent className="p-4 md:p-6">
+                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <Skeleton className="h-10 w-full" />
+                            <Skeleton className="h-10 w-full" />
+                            <Skeleton className="h-10 w-full" />
+                         </div>
+                    </CardContent>
+                </Card>
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-64 w-full" />)}
+                 </div>
+          </div>
+      )
+  }
 
   return (
     <div className="container mx-auto py-12 px-4">

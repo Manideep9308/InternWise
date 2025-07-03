@@ -3,13 +3,16 @@
 
 import { useState, useEffect } from 'react';
 import { InterviewCoachChat } from '@/components/interview-coach-chat';
-import { mockInternships, mockStudentProfile } from '@/lib/mock-data';
-import type { StudentProfile } from '@/lib/types';
+import { mockStudentProfile } from '@/lib/mock-data';
+import type { StudentProfile, Internship } from '@/lib/types';
 import { Card, CardContent, CardFooter, CardHeader } from './ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getInternships } from '@/lib/internship-data-manager';
 
 export function AiCoachLoader() {
   const [profile, setProfile] = useState<StudentProfile | null>(null);
+  const [internships, setInternships] = useState<Internship[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const storedProfileData = localStorage.getItem('studentProfile');
@@ -20,9 +23,11 @@ export function AiCoachLoader() {
       // so the feature is still usable for users who haven't created a profile.
       setProfile(mockStudentProfile);
     }
+    setInternships(getInternships());
+    setIsLoading(false);
   }, []);
 
-  if (!profile) {
+  if (isLoading || !profile) {
     // Show a loading state while we check for the profile
     return (
         <Card className="h-[70vh] flex flex-col">
@@ -49,7 +54,7 @@ export function AiCoachLoader() {
   return (
     <InterviewCoachChat 
       studentProfile={profile}
-      internships={mockInternships}
+      internships={internships}
     />
   );
 }
