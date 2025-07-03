@@ -4,13 +4,14 @@
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { Logo } from './logo';
-import { Briefcase, Bot, User, Menu, X, LogIn, UserCheck } from 'lucide-react';
+import { Briefcase, Bot, User, Menu, X, LogIn, UserCheck, LayoutDashboard } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from './ui/sheet';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Separator } from './ui/separator';
 
 const navLinks = [
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/internships', label: 'Internships', icon: Briefcase },
   { href: '/ai-coach', label: 'AI Coach', icon: Bot },
   { href: '/hiring-manager-simulator', label: 'Resume Review', icon: UserCheck },

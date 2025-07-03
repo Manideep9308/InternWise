@@ -22,7 +22,7 @@ export default function LoginPage() {
         const profile = JSON.parse(storedProfileData);
         // Robustly check if the profile has actual data, not just an empty object.
         if (profile && profile.name && profile.email) {
-          router.push('/profile');
+          router.push('/dashboard');
           return;
         }
       } catch (e) {
