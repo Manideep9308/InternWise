@@ -13,6 +13,18 @@ import { useRouter } from 'next/navigation';
 export default function LoginPage() {
   const router = useRouter();
 
+  const handleStudentLogin = () => {
+    // In a real app, you'd authenticate here.
+    // For this prototype, we'll check if a profile exists to guide the user.
+    const storedProfileData = localStorage.getItem('studentProfile');
+    if (storedProfileData) {
+      router.push('/profile');
+    } else {
+      // If no profile exists, user is guided to create one.
+      router.push('/upload-resume');
+    }
+  };
+
   return (
     <div className="container relative flex-grow flex-col items-center justify-center py-12 md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
       <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
@@ -66,7 +78,7 @@ export default function LoginPage() {
                     </div>
                     <Input id="student-password" type="password" required />
                   </div>
-                  <Button onClick={() => router.push('/profile')} className="w-full">
+                  <Button onClick={handleStudentLogin} className="w-full">
                     Login as Student
                   </Button>
                 </CardContent>
