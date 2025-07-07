@@ -35,6 +35,13 @@ export default function LoginPage() {
     router.push('/upload-resume');
   };
 
+  const handleEmployerLogin = () => {
+    // In a real app, you would authenticate here.
+    // For this prototype, we'll set a mock employer and redirect.
+    localStorage.setItem('employerCompany', 'Innovate Inc.'); // Mocking login for a sample company
+    router.push('/employer/dashboard');
+  };
+
   return (
     <div className="container relative flex-grow flex-col items-center justify-center py-12 md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
       <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
@@ -111,7 +118,7 @@ export default function LoginPage() {
                         </div>
                         <Input id="employer-password" type="password" required />
                       </div>
-                      <Button onClick={() => router.push('/post-internship')} className="w-full">
+                      <Button onClick={handleEmployerLogin} className="w-full">
                           Login as Employer
                       </Button>
                   </CardContent>

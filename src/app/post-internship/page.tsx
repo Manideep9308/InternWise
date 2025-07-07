@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -34,7 +35,7 @@ export default function PostInternshipPage() {
     }
 
     try {
-        const newInternship = addInternship({
+        addInternship({
             company: data.companyName as string,
             title: data.title as string,
             location: data.location as string,
@@ -50,8 +51,8 @@ export default function PostInternshipPage() {
             description: 'Your internship is now live for students to apply.',
         });
         
-        // Redirect to the newly created internship page
-        router.push(`/internships/${newInternship.id}`);
+        // Redirect to the employer dashboard after posting
+        router.push('/employer/dashboard');
 
     } catch (error) {
         console.error("Failed to post internship", error);

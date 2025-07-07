@@ -1,3 +1,4 @@
+
 'use client';
 
 import { mockInternships, mockStudentProfile } from './mock-data';
@@ -63,12 +64,24 @@ const initializeApplications = () => {
 
 export const getInternships = (): Internship[] => {
   initializeInternships();
-  return getFromStorage(INTERNSHIPS_STORAGE_KEY, []);
+  const allApplications = initializeApplications();
+  const internships = getFromStorage<Internship[]>(INTERNSHIPS_STORAGE_KEY, []);
+
+  // Dynamically update applicant counts to ensure data is always fresh
+  return internships.map(internship => ({
+      ...internship,
+      applicants: (allApplications[internship.id] || []).length
+  }));
 };
 
 export const getInternshipById = (id: string): Internship | undefined => {
   const internships = getInternships();
   return internships.find(i => i.id === id);
+};
+
+export const getInternshipsByCompany = (companyName: string): Internship[] => {
+    const internships = getInternships();
+    return internships.filter(i => i.company.toLowerCase() === companyName.toLowerCase());
 };
 
 export const addInternship = (internshipData: Omit<Internship, 'id' | 'logo' | 'postedDate' | 'applicants' | 'responsibilities' | 'perks'> & {responsibilities?: string[], perks?:string[]}): Internship => {
@@ -79,8 +92,12 @@ export const addInternship = (internshipData: Omit<Internship, 'id' | 'logo' | '
         logo: 'https://placehold.co/100x100.png',
         postedDate: 'Just Now',
         applicants: 0,
-        responsibilities: internshipData.responsibilities || [],
-        perks: internshipData.perks || [],
+        responsibilities: internshipData.responsibilities || [
+            'Develop new user-facing features.',
+            'Collaborate with cross-functional teams to define, design, and ship new features.',
+            'Ensure the performance, quality, and responsiveness of applications.'
+        ],
+        perks: internshipData.perks || ['Flexible work hours', 'Mentorship program'],
     };
     const updatedInternships = [newInternship, ...internships];
     setInStorage(INTERNSHIPS_STORAGE_KEY, updatedInternships);
