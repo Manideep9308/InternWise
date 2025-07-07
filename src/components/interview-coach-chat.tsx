@@ -3,13 +3,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { interviewCoach } from '@/ai/flows/ai-interview-coach';
 import { summarizeInterview } from '@/ai/flows/summarize-interview';
+import { textToSpeech } from '@/ai/flows/text-to-speech';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardFooter, CardHeader } from './ui/card';
-import { Bot, Loader2, Send, User, Award } from 'lucide-react';
+import { Bot, Loader2, Send, User, Award, Volume2 } from 'lucide-react';
 import type { Internship, StudentProfile } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback } from './ui/avatar';
@@ -36,6 +37,9 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [summary, setSummary] = useState('');
   const [isSummaryDialogOpen, setIsSummaryDialogOpen] = useState(false);
+  
+  const [speakingMessageIndex, setSpeakingMessageIndex] = useState<number | null>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   const studentProfileString = `Name: ${studentProfile.name}, Education: ${studentProfile.education}, Skills: ${studentProfile.skills}, About: ${studentProfile.about}`;
 
@@ -46,6 +50,12 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
         }
         return;
     }
+
+    if (audioRef.current && !audioRef.current.paused) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    setSpeakingMessageIndex(null);
 
     const newUserMessage: Message = { role: 'user', content: inputMessage };
     setMessages(prev => [...prev, newUserMessage]);
@@ -87,6 +97,29 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
     }
   }, [messages]);
 
+  useEffect(() => {
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage?.role === 'assistant' && !isLoading) {
+        const messageIndex = messages.length - 1;
+        
+        const playAudio = async () => {
+            try {
+                setSpeakingMessageIndex(messageIndex);
+                const result = await textToSpeech(lastMessage.content);
+                if (audioRef.current) {
+                    audioRef.current.src = result.audioDataUri;
+                    audioRef.current.play();
+                }
+            } catch (err) {
+                console.error("Failed to generate or play audio", err);
+                setSpeakingMessageIndex(null);
+            }
+        };
+
+        playAudio();
+    }
+  }, [messages, isLoading]);
+
   const handleEndInterview = async () => {
     if (messages.length === 0) {
         toast({ title: 'There is no conversation to summarize.', variant: 'destructive' });
@@ -122,6 +155,10 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
     setMessages([]);
     setSummary('');
     setIsSummaryDialogOpen(false);
+    if (audioRef.current) {
+        audioRef.current.pause();
+    }
+    setSpeakingMessageIndex(null);
   };
 
   const selectedInternship = internships.find(i => i.id === selectedInternshipId);
@@ -130,7 +167,7 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
     <>
       <Card className="h-[70vh] flex flex-col">
         <CardHeader className="flex flex-row items-center justify-between border-b p-4">
-          <Select onValueChange={(value) => { setSelectedInternshipId(value); setMessages([]); }} value={selectedInternshipId || ''}>
+          <Select onValueChange={(value) => { setSelectedInternshipId(value); handleResetChat(); }} value={selectedInternshipId || ''}>
             <SelectTrigger className="w-full md:w-[350px]">
               <SelectValue placeholder="Select an internship to practice for..." />
             </SelectTrigger>
@@ -167,10 +204,13 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
                           </Avatar>
                       )}
                       <div className={cn(
-                          'max-w-sm md:max-w-md rounded-xl px-4 py-3',
+                          'max-w-sm md:max-w-md rounded-xl px-4 py-3 relative',
                           message.role === 'user' ? 'bg-primary text-primary-foreground rounded-br-none' : 'bg-muted rounded-bl-none'
                       )}>
                           <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                          {speakingMessageIndex === index && (
+                             <Volume2 className="h-4 w-4 absolute -bottom-1 -right-1 text-primary animate-pulse" />
+                          )}
                       </div>
                       {message.role === 'user' && (
                           <Avatar className="w-8 h-8">
@@ -209,6 +249,8 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
           </div>
         </CardFooter>
       </Card>
+      
+      <audio ref={audioRef} onEnded={() => setSpeakingMessageIndex(null)} className="hidden" />
 
       <AlertDialog open={isSummaryDialogOpen} onOpenChange={setIsSummaryDialogOpen}>
         <AlertDialogContent className="max-w-2xl">

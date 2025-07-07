@@ -8,3 +8,4 @@ import '@/ai/flows/analyze-resume.ts';
 import '@/ai/flows/hiring-manager-simulator.ts';
 import '@/ai/flows/rank-internships.ts';
 import '@/ai/flows/rank-applicants.ts';
+import '@/ai/flows/text-to-speech.ts';
