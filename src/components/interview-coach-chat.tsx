@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { interviewCoach } from '@/ai/flows/ai-interview-coach';
 import { summarizeInterview } from '@/ai/flows/summarize-interview';
 import { textToSpeech } from '@/ai/flows/text-to-speech';
@@ -46,10 +46,11 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
   const [isSpeechSupported, setIsSpeechSupported] = useState(false);
   const recognitionRef = useRef<any>(null);
   const wasRecordingRef = useRef(false);
+  const speechTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const studentProfileString = `Name: ${studentProfile.name}, Education: ${studentProfile.education}, Skills: ${studentProfile.skills}, About: ${studentProfile.about}`;
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = useCallback(async () => {
     if (!inputMessage.trim() || !selectedInternshipId) {
         if (!selectedInternshipId) {
             toast({ title: 'Please select an internship first.', variant: 'destructive' });
@@ -94,7 +95,7 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
       setMessages(conversationHistory); // On failure, revert to the old state
     }
     setIsLoading(false);
-  };
+  }, [inputMessage, selectedInternshipId, messages, internships, studentProfileString, toast]);
 
   useEffect(() => {
     // Auto-send message after recording stops
@@ -102,7 +103,7 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
       handleSendMessage();
     }
     wasRecordingRef.current = isRecording;
-  }, [isRecording]);
+  }, [isRecording, inputMessage, isLoading, handleSendMessage]);
 
   useEffect(() => {
     setIsSpeechSupported('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
@@ -114,17 +115,32 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
     
-    recognition.continuous = false;
-    recognition.interimResults = false;
+    recognition.continuous = true;
+    recognition.interimResults = true;
     recognition.lang = 'en-US';
 
     recognition.onstart = () => {
       setIsRecording(true);
+      if (speechTimeoutRef.current) {
+        clearTimeout(speechTimeoutRef.current);
+      }
     };
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const transcript = event.results[0][0].transcript;
+      const transcript = Array.from(event.results)
+        .map(result => result[0])
+        .map(result => result.transcript)
+        .join('');
       setInputMessage(transcript);
+      
+      if (speechTimeoutRef.current) {
+        clearTimeout(speechTimeoutRef.current);
+      }
+      speechTimeoutRef.current = setTimeout(() => {
+        if (recognitionRef.current) {
+          recognitionRef.current.stop();
+        }
+      }, 10000); // 10-second pause timeout
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
@@ -136,14 +152,25 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
             variant: 'destructive',
         });
       }
+      if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);
       setIsRecording(false);
     };
 
     recognition.onend = () => {
+      if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);
       setIsRecording(false);
     };
 
     recognitionRef.current = recognition;
+
+    return () => {
+        if (recognitionRef.current) {
+            recognitionRef.current.stop();
+        }
+        if (speechTimeoutRef.current) {
+            clearTimeout(speechTimeoutRef.current);
+        }
+    }
   }, [isSpeechSupported, toast]);
 
   useEffect(() => {
@@ -226,9 +253,11 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
     if (!recognitionRef.current) return;
     
     if (isRecording) {
+      if (speechTimeoutRef.current) {
+        clearTimeout(speechTimeoutRef.current);
+      }
       recognitionRef.current.stop();
     } else {
-      // Clear previous text before starting new recording
       setInputMessage('');
       recognitionRef.current.start();
     }
