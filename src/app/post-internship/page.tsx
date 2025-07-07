@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,8 +14,23 @@ import { ArrowLeft } from 'lucide-react';
 
 export default function PostInternshipPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [companyName, setCompanyName] = useState('');
   const { toast } = useToast();
   const router = useRouter();
+
+  useEffect(() => {
+    const storedCompanyName = localStorage.getItem('employerCompany');
+    if (storedCompanyName) {
+      setCompanyName(storedCompanyName);
+    } else {
+      toast({
+        title: 'Unauthorized',
+        description: 'You must be logged in as an employer to post a job.',
+        variant: 'destructive',
+      });
+      router.push('/login');
+    }
+  }, [router, toast]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -88,7 +103,13 @@ export default function PostInternshipPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="companyName">Company Name</Label>
-                  <Input id="companyName" name="companyName" placeholder="e.g., Innovate Inc." required/>
+                  <Input 
+                    id="companyName" 
+                    name="companyName" 
+                    value={companyName}
+                    readOnly 
+                    className="bg-secondary/50"
+                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="title">Internship Title</Label>
@@ -133,7 +154,7 @@ export default function PostInternshipPage() {
                 <p className="text-xs text-muted-foreground">This is a UI-only feature.</p>
               </div>
 
-              <Button type="submit" disabled={isSubmitting} className="w-full md:w-auto">
+              <Button type="submit" disabled={isSubmitting || !companyName} className="w-full md:w-auto">
                 {isSubmitting ? 'Posting...' : 'Post Internship'}
               </Button>
             </CardContent>
