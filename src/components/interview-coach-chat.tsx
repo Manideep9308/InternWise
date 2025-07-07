@@ -10,11 +10,12 @@ import { ScrollArea } from './ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardFooter, CardHeader } from './ui/card';
-import { Bot, Loader2, Send, User, Award, Volume2 } from 'lucide-react';
+import { Bot, Loader2, Send, User, Award, Volume2, Mic, MicOff } from 'lucide-react';
 import type { Internship, StudentProfile } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 interface InterviewCoachChatProps {
   studentProfile: StudentProfile;
@@ -40,6 +41,55 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
   
   const [speakingMessageIndex, setSpeakingMessageIndex] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  
+  const [isRecording, setIsRecording] = useState(false);
+  const [isSpeechSupported, setIsSpeechSupported] = useState(false);
+  const recognitionRef = useRef<any>(null); // Use `any` for cross-browser compatibility (webkitSpeechRecognition)
+
+
+  useEffect(() => {
+    setIsSpeechSupported('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
+  }, []);
+
+
+  useEffect(() => {
+    if (!isSpeechSupported) return;
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    
+    recognition.continuous = false; // Stop recording when the user pauses
+    recognition.interimResults = false; // Only give final results
+    recognition.lang = 'en-US';
+
+    recognition.onstart = () => {
+      setIsRecording(true);
+    };
+
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      const transcript = event.results[0][0].transcript;
+      setInputMessage(prev => (prev ? prev + ' ' : '') + transcript);
+    };
+
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+      console.error('Speech recognition error', event.error);
+      if (event.error === 'not-allowed') {
+        toast({
+            title: 'Microphone Access Denied',
+            description: 'Please enable microphone permissions in your browser settings.',
+            variant: 'destructive',
+        });
+      }
+      setIsRecording(false);
+    };
+
+    recognition.onend = () => {
+      setIsRecording(false);
+    };
+
+    recognitionRef.current = recognition;
+  }, [isSpeechSupported, toast]);
+
 
   const studentProfileString = `Name: ${studentProfile.name}, Education: ${studentProfile.education}, Skills: ${studentProfile.skills}, About: ${studentProfile.about}`;
 
@@ -158,7 +208,20 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
     if (audioRef.current) {
         audioRef.current.pause();
     }
+    if (isRecording) {
+      recognitionRef.current?.stop();
+    }
     setSpeakingMessageIndex(null);
+  };
+
+  const handleMicClick = () => {
+    if (!recognitionRef.current) return;
+    
+    if (isRecording) {
+      recognitionRef.current.stop();
+    } else {
+      recognitionRef.current.start();
+    }
   };
 
   const selectedInternship = internships.find(i => i.id === selectedInternshipId);
@@ -193,7 +256,7 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
                   <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
                       <Bot className="h-12 w-12 mb-4"/>
                       <p>You've selected to practice for <span className="font-semibold text-foreground">{selectedInternship?.title}</span>.</p>
-                      <p>Say "hi" or "let's start" to begin!</p>
+                      <p>Say "hi", or press the mic to start!</p>
                   </div>
               ) : (
                   messages.map((message, index) => (
@@ -237,13 +300,35 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
           <div className="flex w-full items-center space-x-2">
             <Input
               type="text"
-              placeholder="Type your answer..."
+              placeholder="Type your answer or use the mic..."
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !isLoading && handleSendMessage()}
               disabled={isLoading || !selectedInternshipId || isSummarizing}
             />
-            <Button onClick={handleSendMessage} disabled={isLoading || !selectedInternshipId || isSummarizing}>
+             <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    type="button" 
+                    onClick={handleMicClick} 
+                    variant="outline" 
+                    size="icon" 
+                    disabled={isLoading || !selectedInternshipId || isSummarizing || !isSpeechSupported || isRecording}
+                  >
+                    {isRecording 
+                      ? <MicOff className="h-4 w-4 text-destructive animate-pulse" /> 
+                      : <Mic className="h-4 w-4" />
+                    }
+                    <span className="sr-only">{isRecording ? 'Stop recording' : 'Start recording'}</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{isSpeechSupported ? (isRecording ? "Recording..." : "Speak your answer") : "Speech not supported"}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <Button onClick={handleSendMessage} disabled={isLoading || !selectedInternshipId || isSummarizing || !inputMessage.trim()}>
               <Send className="h-4 w-4"/>
             </Button>
           </div>
