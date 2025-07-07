@@ -44,13 +44,69 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
   
   const [isRecording, setIsRecording] = useState(false);
   const [isSpeechSupported, setIsSpeechSupported] = useState(false);
-  const recognitionRef = useRef<any>(null); // Use `any` for cross-browser compatibility (webkitSpeechRecognition)
+  const recognitionRef = useRef<any>(null);
+  const wasRecordingRef = useRef(false);
 
+  const studentProfileString = `Name: ${studentProfile.name}, Education: ${studentProfile.education}, Skills: ${studentProfile.skills}, About: ${studentProfile.about}`;
+
+  const handleSendMessage = async () => {
+    if (!inputMessage.trim() || !selectedInternshipId) {
+        if (!selectedInternshipId) {
+            toast({ title: 'Please select an internship first.', variant: 'destructive' });
+        }
+        return;
+    }
+
+    if (audioRef.current && !audioRef.current.paused) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    setSpeakingMessageIndex(null);
+
+    const newUserMessage: Message = { role: 'user', content: inputMessage };
+    const currentInput = inputMessage;
+    const conversationHistory = messages; // Capture the history *before* adding the new message
+
+    setMessages(prev => [...prev, newUserMessage]);
+    setInputMessage('');
+    setIsLoading(true);
+
+    try {
+      const selectedInternship = internships.find(i => i.id === selectedInternshipId);
+      if (!selectedInternship) throw new Error('Internship not found');
+
+      const result = await interviewCoach({
+        studentProfile: studentProfileString,
+        selectedInternship: `Title: ${selectedInternship.title}, Description: ${selectedInternship.description}`,
+        conversationHistory: conversationHistory,
+        userMessage: currentInput,
+      });
+
+      const newAiMessage: Message = { role: 'assistant', content: result.aiResponse };
+      setMessages(prev => [...prev, newAiMessage]);
+    } catch (error) {
+      console.error('Error with AI Coach:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to get a response from the AI coach. Please try again.',
+        variant: 'destructive',
+      });
+      setMessages(conversationHistory); // On failure, revert to the old state
+    }
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    // Auto-send message after recording stops
+    if (wasRecordingRef.current && !isRecording && inputMessage.trim() && !isLoading) {
+      handleSendMessage();
+    }
+    wasRecordingRef.current = isRecording;
+  }, [isRecording]);
 
   useEffect(() => {
     setIsSpeechSupported('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
   }, []);
-
 
   useEffect(() => {
     if (!isSpeechSupported) return;
@@ -58,8 +114,8 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
     
-    recognition.continuous = false; // Stop recording when the user pauses
-    recognition.interimResults = false; // Only give final results
+    recognition.continuous = false;
+    recognition.interimResults = false;
     recognition.lang = 'en-US';
 
     recognition.onstart = () => {
@@ -68,7 +124,7 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       const transcript = event.results[0][0].transcript;
-      setInputMessage(prev => (prev ? prev + ' ' : '') + transcript);
+      setInputMessage(transcript);
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
@@ -90,54 +146,6 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
     recognitionRef.current = recognition;
   }, [isSpeechSupported, toast]);
 
-
-  const studentProfileString = `Name: ${studentProfile.name}, Education: ${studentProfile.education}, Skills: ${studentProfile.skills}, About: ${studentProfile.about}`;
-
-  const handleSendMessage = async () => {
-    if (!inputMessage.trim() || !selectedInternshipId) {
-        if (!selectedInternshipId) {
-            toast({ title: 'Please select an internship first.', variant: 'destructive' });
-        }
-        return;
-    }
-
-    if (audioRef.current && !audioRef.current.paused) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
-    setSpeakingMessageIndex(null);
-
-    const newUserMessage: Message = { role: 'user', content: inputMessage };
-    setMessages(prev => [...prev, newUserMessage]);
-    const currentInput = inputMessage;
-    setInputMessage('');
-    setIsLoading(true);
-
-    try {
-      const selectedInternship = internships.find(i => i.id === selectedInternshipId);
-      if (!selectedInternship) throw new Error('Internship not found');
-
-      const result = await interviewCoach({
-        studentProfile: studentProfileString,
-        selectedInternship: `Title: ${selectedInternship.title}, Description: ${selectedInternship.description}`,
-        conversationHistory: messages,
-        userMessage: currentInput,
-      });
-
-      const newAiMessage: Message = { role: 'assistant', content: result.aiResponse };
-      setMessages(prev => [...prev, newAiMessage]);
-    } catch (error) {
-      console.error('Error with AI Coach:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to get a response from the AI coach. Please try again.',
-        variant: 'destructive',
-      });
-      setMessages(prev => prev.slice(0, -1)); // Remove the user message if AI fails
-    }
-    setIsLoading(false);
-  };
-  
   useEffect(() => {
     if (scrollAreaRef.current) {
         scrollAreaRef.current.scrollTo({
@@ -220,6 +228,8 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
     if (isRecording) {
       recognitionRef.current.stop();
     } else {
+      // Clear previous text before starting new recording
+      setInputMessage('');
       recognitionRef.current.start();
     }
   };
@@ -314,7 +324,7 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
                     onClick={handleMicClick} 
                     variant="outline" 
                     size="icon" 
-                    disabled={isLoading || !selectedInternshipId || isSummarizing || !isSpeechSupported || isRecording}
+                    disabled={isLoading || !selectedInternshipId || isSummarizing || !isSpeechSupported}
                   >
                     {isRecording 
                       ? <MicOff className="h-4 w-4 text-destructive animate-pulse" /> 
@@ -346,9 +356,7 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <ScrollArea className="h-[50vh] pr-6 rounded-md border p-4">
-                <div className="text-sm text-foreground whitespace-pre-wrap">
-                    {summary}
-                </div>
+                <div className="text-sm text-foreground whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: summary.replace(/\n/g, '<br />') }} />
             </ScrollArea>
             <AlertDialogFooter>
                 <AlertDialogAction onClick={handleResetChat}>
