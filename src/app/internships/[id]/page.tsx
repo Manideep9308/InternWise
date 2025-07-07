@@ -3,18 +3,20 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { notFound, useRouter } from 'next/navigation';
+import { notFound, useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Briefcase, MapPin, DollarSign, Calendar, Users, CheckCircle, FileText, Check, Eye } from 'lucide-react';
 import { CoverLetterGeneratorLoader } from '@/components/cover-letter-generator-loader';
-import { getInternshipById, applyForInternship, hasApplied } from '@/lib/internship-data-manager';
+import { getInternshipById, applyForInternship, hasApplied, getApplicantsForInternship } from '@/lib/internship-data-manager';
 import type { Internship, StudentProfile } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 
-export default function InternshipDetailPage({ params }: { params: { id: string } }) {
+export default function InternshipDetailPage() {
+  const params = useParams();
+  const id = params.id as string;
   const [internship, setInternship] = useState<Internship | null | undefined>(null);
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [hasUserApplied, setHasUserApplied] = useState(false);
@@ -23,7 +25,8 @@ export default function InternshipDetailPage({ params }: { params: { id: string 
   const { toast } = useToast();
 
   useEffect(() => {
-    const foundInternship = getInternshipById(params.id);
+    if (!id) return;
+    const foundInternship = getInternshipById(id);
     setInternship(foundInternship);
     
     const storedProfileData = localStorage.getItem('studentProfile');
@@ -38,7 +41,7 @@ export default function InternshipDetailPage({ params }: { params: { id: string 
         console.error("Failed to parse student profile", e);
       }
     }
-  }, [params.id]);
+  }, [id]);
 
   const handleApply = () => {
     if (!profile || !profile.email) {
@@ -52,7 +55,7 @@ export default function InternshipDetailPage({ params }: { params: { id: string 
     }
 
     setIsApplying(true);
-    const success = applyForInternship(params.id, profile);
+    const success = applyForInternship(id, profile);
     
     if (success) {
       toast({

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getInternshipById, getApplicantsForInternship } from '@/lib/internship-data-manager';
@@ -18,7 +18,9 @@ type RankedApplicantProfile = StudentProfile & {
     justification?: string;
 };
 
-export default function ApplicantsPage({ params }: { params: { id: string } }) {
+export default function ApplicantsPage() {
+    const params = useParams();
+    const id = params.id as string;
     const [internship, setInternship] = useState<Internship | null | undefined>(null);
     const [applicants, setApplicants] = useState<RankedApplicantProfile[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -26,14 +28,15 @@ export default function ApplicantsPage({ params }: { params: { id: string } }) {
     const { toast } = useToast();
 
     useEffect(() => {
-        const foundInternship = getInternshipById(params.id);
+        if (!id) return;
+        const foundInternship = getInternshipById(id);
         setInternship(foundInternship);
         if (foundInternship) {
-            const initialApplicants = getApplicantsForInternship(params.id);
+            const initialApplicants = getApplicantsForInternship(id);
             setApplicants(initialApplicants);
         }
         setIsLoading(false);
-    }, [params.id]);
+    }, [id]);
 
     const handleRankApplicants = async () => {
         if (!internship || applicants.length === 0) return;
