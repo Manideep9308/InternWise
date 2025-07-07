@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import type { StudentProfile } from '@/lib/types';
 import { useRouter } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
 
 const initialProfile: StudentProfile = {
   name: '',
@@ -23,6 +24,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<StudentProfile>(initialProfile);
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     // On component mount, try to load the profile from localStorage.
@@ -62,6 +64,10 @@ export default function ProfilePage() {
   return (
     <div className="container mx-auto py-12 px-4">
       <div className="max-w-3xl mx-auto">
+        <Button variant="ghost" onClick={() => router.back()} className="mb-6">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
+        </Button>
         <div className="text-center mb-10">
             <h1 className="text-4xl font-bold font-headline">Your Profile</h1>
             <p className="text-muted-foreground mt-2">Keep your information up-to-date to impress employers.</p>

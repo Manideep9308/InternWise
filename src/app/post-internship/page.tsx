@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { addInternship } from '@/lib/internship-data-manager';
+import { ArrowLeft } from 'lucide-react';
 
 export default function PostInternshipPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -68,6 +69,10 @@ export default function PostInternshipPage() {
   return (
     <div className="container mx-auto py-12 px-4">
       <div className="max-w-3xl mx-auto">
+        <Button variant="ghost" onClick={() => router.back()} className="mb-6">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
+        </Button>
         <div className="text-center mb-10">
             <h1 className="text-4xl font-bold font-headline">Post an Internship</h1>
             <p className="text-muted-foreground mt-2">Fill out the details below to find your next top talent.</p>

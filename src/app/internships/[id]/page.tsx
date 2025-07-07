@@ -7,7 +7,7 @@ import { notFound, useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Briefcase, MapPin, DollarSign, Calendar, Users, CheckCircle, FileText, Check, Eye } from 'lucide-react';
+import { Briefcase, MapPin, DollarSign, Calendar, Users, CheckCircle, FileText, Check, Eye, ArrowLeft } from 'lucide-react';
 import { CoverLetterGeneratorLoader } from '@/components/cover-letter-generator-loader';
 import { getInternshipById, applyForInternship, hasApplied, getApplicantsForInternship } from '@/lib/internship-data-manager';
 import type { Internship, StudentProfile } from '@/lib/types';
@@ -17,11 +17,11 @@ import { useToast } from '@/hooks/use-toast';
 export default function InternshipDetailPage() {
   const params = useParams();
   const id = params.id as string;
+  const router = useRouter();
   const [internship, setInternship] = useState<Internship | null | undefined>(null);
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [hasUserApplied, setHasUserApplied] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
-  const router = useRouter();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -116,6 +116,10 @@ export default function InternshipDetailPage() {
   return (
     <div className="bg-secondary">
       <div className="container mx-auto py-12 px-4">
+        <Button variant="ghost" onClick={() => router.back()} className="mb-6">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
+        </Button>
         {/* Header section */}
         <Card className="mb-8 overflow-hidden">
           <div className="bg-primary/10 p-8">

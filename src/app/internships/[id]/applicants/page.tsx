@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { notFound, useParams } from 'next/navigation';
+import { notFound, useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getInternshipById, getApplicantsForInternship } from '@/lib/internship-data-manager';
@@ -9,7 +9,7 @@ import { rankApplicants } from '@/ai/flows/rank-applicants';
 import type { Internship, StudentProfile } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { Award, Bot, FileText, Loader2, Mail, School, Sparkles, User, Users } from 'lucide-react';
+import { Award, Bot, FileText, Loader2, Mail, School, Sparkles, User, Users, ArrowLeft } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 
@@ -21,6 +21,7 @@ type RankedApplicantProfile = StudentProfile & {
 export default function ApplicantsPage() {
     const params = useParams();
     const id = params.id as string;
+    const router = useRouter();
     const [internship, setInternship] = useState<Internship | null | undefined>(null);
     const [applicants, setApplicants] = useState<RankedApplicantProfile[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -97,6 +98,10 @@ export default function ApplicantsPage() {
     return (
         <div className="bg-secondary min-h-screen">
             <div className="container mx-auto py-12 px-4">
+                 <Button variant="ghost" onClick={() => router.back()} className="mb-6">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back
+                </Button>
                 <div className="mb-10">
                     <h1 className="text-4xl font-bold font-headline">Applicants</h1>
                     <p className="text-xl text-primary font-semibold">{internship.title} at {internship.company}</p>
