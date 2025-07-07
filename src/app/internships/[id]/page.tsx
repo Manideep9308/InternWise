@@ -2,23 +2,72 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { notFound } from 'next/navigation';
+import Link from 'next/link';
+import { notFound, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Briefcase, MapPin, DollarSign, Calendar, Users, CheckCircle, FileText } from 'lucide-react';
+import { Briefcase, MapPin, DollarSign, Calendar, Users, CheckCircle, FileText, Check, Eye } from 'lucide-react';
 import { CoverLetterGeneratorLoader } from '@/components/cover-letter-generator-loader';
-import { getInternshipById } from '@/lib/internship-data-manager';
-import type { Internship } from '@/lib/types';
+import { getInternshipById, applyForInternship, hasApplied } from '@/lib/internship-data-manager';
+import type { Internship, StudentProfile } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
 
 export default function InternshipDetailPage({ params }: { params: { id: string } }) {
   const [internship, setInternship] = useState<Internship | null | undefined>(null);
+  const [profile, setProfile] = useState<StudentProfile | null>(null);
+  const [hasUserApplied, setHasUserApplied] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
+  const router = useRouter();
+  const { toast } = useToast();
 
   useEffect(() => {
     const foundInternship = getInternshipById(params.id);
     setInternship(foundInternship);
+    
+    const storedProfileData = localStorage.getItem('studentProfile');
+    if (storedProfileData) {
+      try {
+        const parsedProfile = JSON.parse(storedProfileData);
+        setProfile(parsedProfile);
+        if (foundInternship && parsedProfile.email) {
+          setHasUserApplied(hasApplied(foundInternship.id, parsedProfile.email));
+        }
+      } catch (e) {
+        console.error("Failed to parse student profile", e);
+      }
+    }
   }, [params.id]);
+
+  const handleApply = () => {
+    if (!profile || !profile.email) {
+      toast({
+        title: "Please create a profile first",
+        description: "You need to have a profile with a valid email to apply for internships.",
+        variant: "destructive"
+      });
+      router.push('/upload-resume');
+      return;
+    }
+
+    setIsApplying(true);
+    const success = applyForInternship(params.id, profile);
+    
+    if (success) {
+      toast({
+        title: "Application Sent!",
+        description: `Your application for ${internship?.title} has been submitted.`,
+      });
+      setHasUserApplied(true);
+    } else {
+      toast({
+        title: "Already Applied",
+        description: "You have already applied for this internship.",
+      });
+    }
+    setIsApplying(false);
+  };
 
   if (internship === undefined) {
     notFound();
@@ -84,12 +133,17 @@ export default function InternshipDetailPage({ params }: { params: { id: string 
                     <div className="flex items-center gap-2"><MapPin className="h-5 w-5 text-primary" />{internship.location}</div>
                     <div className="flex items-center gap-2"><DollarSign className="h-5 w-5 text-primary" />{internship.stipend}</div>
                     <div className="flex items-center gap-2"><Calendar className="h-5 w-5 text-primary" />{internship.duration}</div>
-                    <div className="flex items-center gap-2"><Users className="h-5 w-5 text-primary" />{internship.applicants} applicants</div>
+                    <div className="flex items-center gap-2"><Users className="h-5 w-5 text-primary" />{getApplicantsForInternship(internship.id).length} applicants</div>
                 </div>
               </div>
-              <div className="w-full md:w-auto flex-shrink-0">
-                  <Button size="lg" className="w-full">Apply Now</Button>
-                  <p className="text-xs text-muted-foreground text-center mt-2">Posted {internship.postedDate}</p>
+              <div className="w-full md:w-auto flex-shrink-0 space-y-2">
+                  <Button size="lg" className="w-full" onClick={handleApply} disabled={hasUserApplied || isApplying}>
+                    {hasUserApplied ? <><Check className="mr-2"/> Applied</> : 'Apply Now'}
+                  </Button>
+                  <p className="text-xs text-muted-foreground text-center">Posted {internship.postedDate}</p>
+                  <Link href={`/internships/${internship.id}/applicants`} passHref>
+                    <Button variant="outline" className="w-full"><Eye className="mr-2"/> View Applicants</Button>
+                  </Link>
               </div>
             </div>
           </div>
