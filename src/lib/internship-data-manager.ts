@@ -1,7 +1,6 @@
 
 'use client';
 
-import { mockInternships, mockStudentProfile } from './mock-data';
 import type { Internship, StudentProfile, InterviewResult, Message } from './types';
 
 const INTERNSHIPS_STORAGE_KEY = 'internships';
@@ -15,6 +14,7 @@ const getFromStorage = <T>(key: string, defaultValue: T): T => {
     }
     try {
         const storedData = localStorage.getItem(key);
+        // If there's no data, we return the default value.
         return storedData ? JSON.parse(storedData) : defaultValue;
     } catch (error) {
         console.error(`Could not access localStorage or parse data for key "${key}".`, error);
@@ -33,40 +33,11 @@ const setInStorage = <T>(key: string, value: T) => {
     }
 };
 
-// Initialize internships with mock data if not present
-const initializeInternships = () => {
-    const storedInternships = getFromStorage<Internship[] | null>(INTERNSHIPS_STORAGE_KEY, null);
-    if (!storedInternships) {
-        setInStorage(INTERNSHIPS_STORAGE_KEY, mockInternships);
-        return mockInternships;
-    }
-    return storedInternships;
-};
-
-// Initialize applications with some mock data for demonstration
-const initializeApplications = () => {
-    const storedApplications = getFromStorage<Record<string, StudentProfile[]> | null>(APPLICATIONS_STORAGE_KEY, null);
-    if (!storedApplications) {
-        const mockApplications: Record<string, StudentProfile[]> = {
-            '1': [mockStudentProfile], // Alex Doe has applied to the first internship
-        };
-        // Add a few more mock applicants for a better demo
-        const anotherStudent = {...mockStudentProfile, name: 'Jane Smith', email: 'jane.smith@example.com', skills: 'Python, SQL, Tableau, Data Analysis'};
-        const thirdStudent = {...mockStudentProfile, name: 'Peter Jones', email: 'peter.jones@example.com', skills: 'JavaScript, HTML, CSS, Figma'};
-        mockApplications['1'].push(anotherStudent);
-        mockApplications['3'] = [thirdStudent];
-
-        setInStorage(APPLICATIONS_STORAGE_KEY, mockApplications);
-        return mockApplications;
-    }
-    return storedApplications;
-}
-
+// --- Internship Management ---
 
 export const getInternships = (): Internship[] => {
-  initializeInternships();
-  const allApplications = initializeApplications();
   const internships = getFromStorage<Internship[]>(INTERNSHIPS_STORAGE_KEY, []);
+  const allApplications = getFromStorage<Record<string, StudentProfile[]>>(APPLICATIONS_STORAGE_KEY, {});
 
   // Dynamically update applicant counts to ensure data is always fresh
   return internships.map(internship => ({
@@ -106,10 +77,10 @@ export const addInternship = (internshipData: Omit<Internship, 'id' | 'logo' | '
     return newInternship;
 };
 
-// --- Application Management Functions ---
+// --- Application Management ---
 
 export const getApplicantsForInternship = (internshipId: string): StudentProfile[] => {
-    const allApplications = initializeApplications();
+    const allApplications = getFromStorage<Record<string, StudentProfile[]>>(APPLICATIONS_STORAGE_KEY, {});
     return allApplications[internshipId] || [];
 };
 
@@ -139,7 +110,8 @@ export const applyForInternship = (internshipId: string, studentProfile: Student
     return true;
 };
 
-// --- Interview Result Management Functions ---
+
+// --- Interview Result Management ---
 
 export const saveInterviewResult = (
     internshipId: string, 

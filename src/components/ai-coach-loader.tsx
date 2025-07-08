@@ -2,17 +2,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { InterviewCoachChat } from '@/components/interview-coach-chat';
 import { mockStudentProfile } from '@/lib/mock-data';
 import type { StudentProfile, Internship } from '@/lib/types';
 import { Card, CardContent, CardFooter, CardHeader } from './ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getInternships } from '@/lib/internship-data-manager';
+import { Button } from './ui/button';
+import { Bot, Briefcase } from 'lucide-react';
 
 export function AiCoachLoader() {
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [internships, setInternships] = useState<Internship[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const storedProfileData = localStorage.getItem('studentProfile');
@@ -49,6 +53,24 @@ export function AiCoachLoader() {
             </CardFooter>
       </Card>
     );
+  }
+
+  if (internships.length === 0) {
+    return (
+        <Card className="h-[70vh] flex flex-col items-center justify-center">
+            <CardContent className="text-center">
+                 <Bot className="h-12 w-12 mb-4 mx-auto text-muted-foreground"/>
+                <h3 className="text-xl font-semibold">No Internships Available for Practice</h3>
+                <p className="text-muted-foreground mt-2 mb-4 max-w-sm">
+                    The AI Coach needs at least one internship to practice for. You can post one from the employer view to get started.
+                </p>
+                <Button onClick={() => router.push('/post-internship')}>
+                    <Briefcase className="mr-2" />
+                    Post an Internship
+                </Button>
+            </CardContent>
+        </Card>
+    )
   }
 
   return (
