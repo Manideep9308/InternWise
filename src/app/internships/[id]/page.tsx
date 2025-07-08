@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -22,12 +23,18 @@ export default function InternshipDetailPage() {
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [hasUserApplied, setHasUserApplied] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
+  const [isEmployer, setIsEmployer] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     if (!id) return;
     const foundInternship = getInternshipById(id);
     setInternship(foundInternship);
+    
+    // Check if logged in as an employer
+    if (localStorage.getItem('employerCompany')) {
+        setIsEmployer(true);
+    }
     
     const storedProfileData = localStorage.getItem('studentProfile');
     if (storedProfileData) {
@@ -144,13 +151,16 @@ export default function InternshipDetailPage() {
                 </div>
               </div>
               <div className="w-full md:w-auto flex-shrink-0 space-y-2">
-                  <Button size="lg" className="w-full" onClick={handleApply} disabled={hasUserApplied || isApplying}>
-                    {hasUserApplied ? <><Check className="mr-2"/> Applied</> : 'Apply Now'}
-                  </Button>
+                  {!isEmployer ? (
+                    <Button size="lg" className="w-full" onClick={handleApply} disabled={hasUserApplied || isApplying}>
+                        {hasUserApplied ? <><Check className="mr-2"/> Applied</> : 'Apply Now'}
+                    </Button>
+                  ) : (
+                    <Link href={`/internships/${internship.id}/applicants`} passHref>
+                        <Button variant="outline" className="w-full"><Eye className="mr-2"/> View Applicants</Button>
+                    </Link>
+                  )}
                   <p className="text-xs text-muted-foreground text-center">Posted {internship.postedDate}</p>
-                  <Link href={`/internships/${internship.id}/applicants`} passHref>
-                    <Button variant="outline" className="w-full"><Eye className="mr-2"/> View Applicants</Button>
-                  </Link>
               </div>
             </div>
           </div>

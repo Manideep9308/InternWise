@@ -19,6 +19,14 @@ export default function SignupPage() {
     router.push('/upload-resume');
   };
 
+  const handleEmployerSignup = () => {
+    // In a real app, you would create the account here.
+    // For this prototype, we'll set a mock employer and redirect to the dashboard.
+    // We'll use a different name to distinguish from the login flow's company.
+    localStorage.setItem('employerCompany', 'NextGen Apps'); 
+    router.push('/employer/dashboard');
+  };
+
   return (
     <div className="container relative flex-grow flex-col items-center justify-center py-12 md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
       <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
@@ -83,7 +91,7 @@ export default function SignupPage() {
                   <CardContent className="space-y-4 pt-6">
                       <div className="grid gap-2">
                         <Label htmlFor="employer-name">Company Name</Label>
-                        <Input id="employer-name" type="text" placeholder="Innovate Inc." required />
+                        <Input id="employer-name" name="employer-name" type="text" placeholder="Innovate Inc." required />
                       </div>
                       <div className="grid gap-2">
                           <Label htmlFor="employer-email">Company Email</Label>
@@ -93,7 +101,7 @@ export default function SignupPage() {
                         <Label htmlFor="employer-password">Password</Label>
                         <Input id="employer-password" type="password" required />
                       </div>
-                      <Button onClick={() => router.push('/post-internship')} className="w-full">
+                      <Button onClick={handleEmployerSignup} className="w-full">
                           Create Employer Account
                       </Button>
                   </CardContent>
