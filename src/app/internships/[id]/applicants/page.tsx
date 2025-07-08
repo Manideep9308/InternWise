@@ -13,7 +13,6 @@ import { Award, Bot, FileText, Loader2, Mail, School, Sparkles, User, Users, Arr
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 
@@ -150,49 +149,51 @@ export default function ApplicantsPage() {
                 )}
             </div>
              <AlertDialog open={!!selectedReport} onOpenChange={(open) => !open && setSelectedReport(null)}>
-                <AlertDialogContent className="max-w-3xl">
+                <AlertDialogContent className="max-w-3xl h-[90vh] flex flex-col">
                     <AlertDialogHeader>
                         <AlertDialogTitle>Interview Report for {selectedReport?.studentEmail}</AlertDialogTitle>
                         <AlertDialogDescription>
                             This is the transcript and AI-generated feedback from the mock interview.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-[60vh]">
-                        <div className="flex flex-col gap-4">
-                           <h3 className="font-semibold">AI Summary & Feedback</h3>
-                           <ScrollArea className="flex-grow rounded-md border p-4 bg-secondary/50">
-                               <div className="text-sm text-foreground whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: selectedReport?.summary.replace(/\n/g, '<br />') || '' }} />
-                           </ScrollArea>
-                        </div>
-                        <div className="flex flex-col gap-4">
-                            <h3 className="font-semibold">Interview Transcript</h3>
-                            <ScrollArea className="flex-grow rounded-md border p-4">
-                                <div className="space-y-4">
-                                    {selectedReport?.conversationHistory.map((message, index) => (
-                                        <div key={index} className={cn('flex items-start gap-2 text-sm', message.role === 'user' ? 'justify-end' : 'justify-start')}>
-                                        {message.role === 'assistant' && (
-                                            <Avatar className="w-6 h-6">
-                                                <AvatarFallback className="bg-primary text-primary-foreground"><Bot size={16}/></AvatarFallback>
-                                            </Avatar>
-                                        )}
-                                        <div className={cn(
-                                            'max-w-xs rounded-lg px-3 py-2',
-                                            message.role === 'user' ? 'bg-primary text-primary-foreground rounded-br-none' : 'bg-muted rounded-bl-none'
-                                        )}>
-                                            <p className="whitespace-pre-wrap">{message.content}</p>
-                                        </div>
-                                        {message.role === 'user' && (
-                                            <Avatar className="w-6 h-6">
-                                                <AvatarFallback><User size={16}/></AvatarFallback>
-                                            </Avatar>
-                                        )}
-                                        </div>
-                                    ))}
+                    <div className="flex-grow overflow-y-auto pr-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="flex flex-col gap-4">
+                               <h3 className="font-semibold">AI Summary & Feedback</h3>
+                               <div className="rounded-md border p-4 bg-secondary/50">
+                                   <div className="text-sm text-foreground whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: selectedReport?.summary.replace(/\n/g, '<br />') || '' }} />
+                               </div>
+                            </div>
+                            <div className="flex flex-col gap-4">
+                                <h3 className="font-semibold">Interview Transcript</h3>
+                                <div className="rounded-md border p-4">
+                                    <div className="space-y-4">
+                                        {selectedReport?.conversationHistory.map((message, index) => (
+                                            <div key={index} className={cn('flex items-start gap-2 text-sm', message.role === 'user' ? 'justify-end' : 'justify-start')}>
+                                            {message.role === 'assistant' && (
+                                                <Avatar className="w-6 h-6">
+                                                    <AvatarFallback className="bg-primary text-primary-foreground"><Bot size={16}/></AvatarFallback>
+                                                </Avatar>
+                                            )}
+                                            <div className={cn(
+                                                'max-w-xs rounded-lg px-3 py-2',
+                                                message.role === 'user' ? 'bg-primary text-primary-foreground rounded-br-none' : 'bg-muted rounded-bl-none'
+                                            )}>
+                                                <p className="whitespace-pre-wrap">{message.content}</p>
+                                            </div>
+                                            {message.role === 'user' && (
+                                                <Avatar className="w-6 h-6">
+                                                    <AvatarFallback><User size={16}/></AvatarFallback>
+                                                </Avatar>
+                                            )}
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
-                            </ScrollArea>
+                            </div>
                         </div>
                     </div>
-                    <AlertDialogFooter>
+                    <AlertDialogFooter className="border-t pt-6">
                         <AlertDialogAction onClick={() => setSelectedReport(null)}>
                             Close
                         </AlertDialogAction>
