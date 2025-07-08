@@ -196,12 +196,20 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
                 }
             } catch (err) {
                 console.error("Failed to generate or play audio", err);
-                toast({
-                    title: "AI Voice Disabled",
-                    description: "You've exceeded the free daily limit for audio generation. The interview will continue in text-only mode.",
-                    variant: "destructive",
-                });
-                setIsTtsDisabled(true);
+                if (err instanceof Error && (err.message.includes('429') || err.message.toLowerCase().includes('quota'))) {
+                    toast({
+                        title: "AI Voice Disabled",
+                        description: "You've exceeded the free daily limit for audio generation. The interview will continue in text-only mode.",
+                        variant: "destructive",
+                    });
+                    setIsTtsDisabled(true);
+                } else {
+                     toast({
+                        title: "Audio Error",
+                        description: "An unexpected error occurred with the AI voice. Please try again.",
+                        variant: "destructive",
+                    });
+                }
                 setSpeakingMessageIndex(null);
             }
         };
