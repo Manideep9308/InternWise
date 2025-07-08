@@ -41,3 +41,8 @@ export type InterviewResult = {
     conversationHistory: Message[];
     summary: string;
 };
+
+export type StudentApplication = {
+  internship: Internship;
+  status: 'Applied' | 'Interview Complete';
+};

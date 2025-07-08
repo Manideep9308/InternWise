@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { Logo } from './logo';
-import { Briefcase, Bot, User, Menu, X, LogIn, UserCheck, LayoutDashboard } from 'lucide-react';
+import { Briefcase, Bot, User, Menu, X, LogIn, UserCheck, LayoutDashboard, ClipboardList } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from './ui/sheet';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -15,6 +15,7 @@ const navLinks = [
   { href: '/internships', label: 'Internships', icon: Briefcase },
   { href: '/ai-coach', label: 'AI Coach', icon: Bot },
   { href: '/hiring-manager-simulator', label: 'Resume Review', icon: UserCheck },
+  { href: '/my-applications', label: 'My Applications', icon: ClipboardList },
   { href: '/profile', label: 'Profile', icon: User },
 ];
 

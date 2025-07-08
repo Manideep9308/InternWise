@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { Internship, StudentProfile, InterviewResult, Message } from './types';
+import type { Internship, StudentProfile, InterviewResult, Message, StudentApplication } from './types';
 
 const INTERNSHIPS_STORAGE_KEY = 'internships';
 const APPLICATIONS_STORAGE_KEY = 'applications';
@@ -109,6 +109,38 @@ export const applyForInternship = (internshipId: string, studentProfile: Student
     
     setInStorage(APPLICATIONS_STORAGE_KEY, updatedApplications);
     return true;
+};
+
+export const getApplicationsByStudent = (studentEmail: string): StudentApplication[] => {
+    if (!studentEmail) return [];
+    
+    const allInternships = getInternships();
+    const allApplications = getFromStorage<Record<string, StudentProfile[]>>(APPLICATIONS_STORAGE_KEY, {});
+    const allInterviewResults = getFromStorage<InterviewResult[]>(INTERVIEW_RESULTS_STORAGE_KEY, []);
+
+    const studentApplications: StudentApplication[] = [];
+
+    for (const internshipId in allApplications) {
+        const applicants = allApplications[internshipId];
+        const hasStudentApplied = applicants.some(app => app.email === studentEmail);
+
+        if (hasStudentApplied) {
+            const internship = allInternships.find(i => i.id === internshipId);
+            if (internship) {
+                const hasCompletedInterview = allInterviewResults.some(
+                    result => result.internshipId === internshipId && result.studentEmail === studentEmail
+                );
+                
+                studentApplications.push({
+                    internship,
+                    status: hasCompletedInterview ? 'Interview Complete' : 'Applied',
+                });
+            }
+        }
+    }
+    
+    // Sort by most recent application (assuming internship ID is time-based)
+    return studentApplications.sort((a, b) => parseInt(b.internship.id, 10) - parseInt(a.internship.id, 10));
 };
 
 
