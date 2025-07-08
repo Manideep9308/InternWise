@@ -15,24 +15,9 @@ export default function LoginPage() {
 
   const handleStudentLogin = () => {
     // In a real app, you'd authenticate here.
-    // For this prototype, we'll check if a populated profile exists to guide the user.
-    const storedProfileData = localStorage.getItem('studentProfile');
-    if (storedProfileData) {
-      try {
-        const profile = JSON.parse(storedProfileData);
-        // Robustly check if the profile has actual data, not just an empty object.
-        if (profile && profile.name && profile.email) {
-          router.push('/dashboard');
-          return;
-        }
-      } catch (e) {
-        // If JSON is malformed, treat as no profile
-        console.error("Failed to parse student profile", e);
-      }
-    }
-    
-    // If no profile exists, or it's empty/invalid, guide user to create one.
-    router.push('/upload-resume');
+    // For this prototype, we'll always redirect to the dashboard.
+    // The dashboard itself will handle prompting the user to create a profile if it doesn't exist.
+    router.push('/dashboard');
   };
 
   const handleEmployerLogin = () => {
