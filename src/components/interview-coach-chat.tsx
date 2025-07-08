@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
@@ -37,6 +38,7 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
   
   const [speakingMessageIndex, setSpeakingMessageIndex] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const [isTtsDisabled, setIsTtsDisabled] = useState(false);
   
   const [isRecording, setIsRecording] = useState(false);
   const [isSpeechSupported, setIsSpeechSupported] = useState(false);
@@ -181,7 +183,7 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
 
   useEffect(() => {
     const lastMessage = messages[messages.length - 1];
-    if (lastMessage?.role === 'assistant' && !isLoading) {
+    if (lastMessage?.role === 'assistant' && !isLoading && !isTtsDisabled) {
         const messageIndex = messages.length - 1;
         
         const playAudio = async () => {
@@ -194,13 +196,19 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
                 }
             } catch (err) {
                 console.error("Failed to generate or play audio", err);
+                toast({
+                    title: "AI Voice Disabled",
+                    description: "You've exceeded the free daily limit for audio generation. The interview will continue in text-only mode.",
+                    variant: "destructive",
+                });
+                setIsTtsDisabled(true);
                 setSpeakingMessageIndex(null);
             }
         };
 
         playAudio();
     }
-  }, [messages, isLoading]);
+  }, [messages, isLoading, isTtsDisabled, toast]);
 
   const handleEndInterview = async () => {
     if (messages.length === 0) {
@@ -223,7 +231,7 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
         setSummary(result.summary);
         setIsSummaryDialogOpen(true);
 
-        if (selectedInternshipId) {
+        if (selectedInternshipId && studentProfile.email) {
             saveInterviewResult(
                 selectedInternshipId,
                 studentProfile.email,
