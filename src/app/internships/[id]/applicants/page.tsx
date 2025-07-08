@@ -4,18 +4,23 @@ import { useState, useEffect, useMemo } from 'react';
 import { notFound, useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { getInternshipById, getApplicantsForInternship } from '@/lib/internship-data-manager';
+import { getInternshipById, getApplicantsForInternship, getInterviewResult } from '@/lib/internship-data-manager';
 import { rankApplicants } from '@/ai/flows/rank-applicants';
-import type { Internship, StudentProfile } from '@/lib/types';
+import type { Internship, StudentProfile, InterviewResult, Message } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { Award, Bot, FileText, Loader2, Mail, School, Sparkles, User, Users, ArrowLeft } from 'lucide-react';
+import { Award, Bot, FileText, Loader2, Mail, School, Sparkles, User, Users, ArrowLeft, MessageSquareQuote } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { cn } from '@/lib/utils';
 
 type RankedApplicantProfile = StudentProfile & {
     score?: number;
     justification?: string;
+    interviewResult?: InterviewResult;
 };
 
 export default function ApplicantsPage() {
@@ -26,6 +31,7 @@ export default function ApplicantsPage() {
     const [applicants, setApplicants] = useState<RankedApplicantProfile[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isRanking, setIsRanking] = useState(false);
+    const [selectedReport, setSelectedReport] = useState<InterviewResult | null>(null);
     const { toast } = useToast();
 
     useEffect(() => {
@@ -34,7 +40,11 @@ export default function ApplicantsPage() {
         setInternship(foundInternship);
         if (foundInternship) {
             const initialApplicants = getApplicantsForInternship(id);
-            setApplicants(initialApplicants);
+             const applicantsWithResults = initialApplicants.map(applicant => {
+                const interviewResult = getInterviewResult(id, applicant.email);
+                return { ...applicant, interviewResult };
+            });
+            setApplicants(applicantsWithResults);
         }
         setIsLoading(false);
     }, [id]);
@@ -127,7 +137,7 @@ export default function ApplicantsPage() {
                 {applicants.length > 0 ? (
                     <div className="space-y-4">
                         {applicants.map((applicant) => (
-                            <ApplicantCard key={applicant.email} applicant={applicant} />
+                            <ApplicantCard key={applicant.email} applicant={applicant} onShowReport={setSelectedReport} />
                         ))}
                     </div>
                 ) : (
@@ -139,11 +149,61 @@ export default function ApplicantsPage() {
                     </Card>
                 )}
             </div>
+             <AlertDialog open={!!selectedReport} onOpenChange={(open) => !open && setSelectedReport(null)}>
+                <AlertDialogContent className="max-w-3xl">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Interview Report for {selectedReport?.studentEmail}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This is the transcript and AI-generated feedback from the mock interview.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-[60vh]">
+                        <div className="flex flex-col gap-4">
+                           <h3 className="font-semibold">AI Summary & Feedback</h3>
+                           <ScrollArea className="flex-grow rounded-md border p-4 bg-secondary/50">
+                               <div className="text-sm text-foreground whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: selectedReport?.summary.replace(/\n/g, '<br />') || '' }} />
+                           </ScrollArea>
+                        </div>
+                        <div className="flex flex-col gap-4">
+                            <h3 className="font-semibold">Interview Transcript</h3>
+                            <ScrollArea className="flex-grow rounded-md border p-4">
+                                <div className="space-y-4">
+                                    {selectedReport?.conversationHistory.map((message, index) => (
+                                        <div key={index} className={cn('flex items-start gap-2 text-sm', message.role === 'user' ? 'justify-end' : 'justify-start')}>
+                                        {message.role === 'assistant' && (
+                                            <Avatar className="w-6 h-6">
+                                                <AvatarFallback className="bg-primary text-primary-foreground"><Bot size={16}/></AvatarFallback>
+                                            </Avatar>
+                                        )}
+                                        <div className={cn(
+                                            'max-w-xs rounded-lg px-3 py-2',
+                                            message.role === 'user' ? 'bg-primary text-primary-foreground rounded-br-none' : 'bg-muted rounded-bl-none'
+                                        )}>
+                                            <p className="whitespace-pre-wrap">{message.content}</p>
+                                        </div>
+                                        {message.role === 'user' && (
+                                            <Avatar className="w-6 h-6">
+                                                <AvatarFallback><User size={16}/></AvatarFallback>
+                                            </Avatar>
+                                        )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </ScrollArea>
+                        </div>
+                    </div>
+                    <AlertDialogFooter>
+                        <AlertDialogAction onClick={() => setSelectedReport(null)}>
+                            Close
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
 
-function ApplicantCard({ applicant }: { applicant: RankedApplicantProfile }) {
+function ApplicantCard({ applicant, onShowReport }: { applicant: RankedApplicantProfile; onShowReport: (result: InterviewResult) => void; }) {
     const skills = useMemo(() => applicant.skills.split(',').map(s => s.trim()).filter(Boolean), [applicant.skills]);
     return (
         <Card className="overflow-hidden transition-all hover:shadow-md">
@@ -174,6 +234,14 @@ function ApplicantCard({ applicant }: { applicant: RankedApplicantProfile }) {
                             {skills.map((skill, i) => <Badge key={i} variant="secondary">{skill}</Badge>)}
                         </div>
                     </div>
+                    {applicant.interviewResult && (
+                         <div className="mt-4">
+                            <Button variant="outline" size="sm" onClick={() => onShowReport(applicant.interviewResult!)}>
+                                <MessageSquareQuote className="mr-2 h-4 w-4" />
+                                View Interview Report
+                            </Button>
+                        </div>
+                    )}
                 </div>
                 {applicant.score !== undefined && (
                     <div className="bg-primary/5 p-6 md:w-1/3 md:border-l">

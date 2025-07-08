@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { interviewCoach } from '@/ai/flows/ai-interview-coach';
 import { summarizeInterview } from '@/ai/flows/summarize-interview';
 import { textToSpeech } from '@/ai/flows/text-to-speech';
+import { saveInterviewResult } from '@/lib/internship-data-manager';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
@@ -11,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardFooter, CardHeader } from './ui/card';
 import { Bot, Loader2, Send, User, Award, Volume2, Mic, MicOff } from 'lucide-react';
-import type { Internship, StudentProfile } from '@/lib/types';
+import type { Internship, StudentProfile, Message } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
@@ -20,11 +21,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/t
 interface InterviewCoachChatProps {
   studentProfile: StudentProfile;
   internships: Internship[];
-}
-
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
 }
 
 export function InterviewCoachChat({ studentProfile, internships }: InterviewCoachChatProps) {
@@ -81,6 +77,7 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
         selectedInternship: `Title: ${selectedInternship.title}, Description: ${selectedInternship.description}`,
         conversationHistory: conversationHistory,
         userMessage: currentInput,
+        customQuestions: selectedInternship.customQuestions,
       });
 
       const newAiMessage: Message = { role: 'assistant', content: result.aiResponse };
@@ -225,6 +222,20 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
 
         setSummary(result.summary);
         setIsSummaryDialogOpen(true);
+
+        if (selectedInternshipId) {
+            saveInterviewResult(
+                selectedInternshipId,
+                studentProfile.email,
+                messages,
+                result.summary
+            );
+            toast({ 
+                title: "Feedback Saved!", 
+                description: "The employer can now view your interview results."
+            });
+        }
+
     } catch (error) {
         console.error('Error summarizing interview:', error);
         toast({

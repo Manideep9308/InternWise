@@ -60,6 +60,7 @@ export default function PostInternshipPage() {
             duration: data.duration as string,
             description: data.description as string,
             skills: (data.skills as string).split(',').map(s => s.trim()),
+            customQuestions: data.customQuestions as string,
         });
 
         toast({
@@ -146,6 +147,12 @@ export default function PostInternshipPage() {
                 <Label htmlFor="skills">Required Skills (comma-separated)</Label>
                 <Input id="skills" name="skills" placeholder="e.g., React, Python, Figma" required/>
                 <p className="text-xs text-muted-foreground">Separate skills with a comma.</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="customQuestions">Custom Interview Questions (optional)</Label>
+                <Textarea id="customQuestions" name="customQuestions" rows={3} placeholder="e.g., Describe a challenging project., Why do you want to work here?" />
+                <p className="text-xs text-muted-foreground">Add comma-separated questions. If provided, the AI coach will ask these instead of generating its own.</p>
               </div>
               
               <div className="space-y-2">

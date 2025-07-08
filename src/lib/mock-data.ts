@@ -21,6 +21,7 @@ export const mockInternships: Internship[] = [
     ],
     skills: ['React', 'Next.js', 'Tailwind CSS', 'TypeScript', 'Git'],
     perks: ['Flexible work hours', 'Mentorship program', 'Letter of recommendation'],
+    customQuestions: 'Describe a challenging project you worked on with React., How would you optimize a slow-loading webpage?, Explain the difference between state and props.',
   },
   {
     id: '2',

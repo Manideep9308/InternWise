@@ -10,11 +10,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-
-const MessageSchema = z.object({
-    role: z.enum(['user', 'assistant']),
-    content: z.string(),
-});
+import { MessageSchema } from '@/lib/types';
 
 const SummarizeInterviewInputSchema = z.object({
   studentProfile: z.string().describe('The student profile information including skills and experience.'),

@@ -2,10 +2,11 @@
 'use client';
 
 import { mockInternships, mockStudentProfile } from './mock-data';
-import type { Internship, StudentProfile } from './types';
+import type { Internship, StudentProfile, InterviewResult, Message } from './types';
 
 const INTERNSHIPS_STORAGE_KEY = 'internships';
 const APPLICATIONS_STORAGE_KEY = 'applications';
+const INTERVIEW_RESULTS_STORAGE_KEY = 'interview_results';
 
 // Helper to safely get data from localStorage
 const getFromStorage = <T>(key: string, defaultValue: T): T => {
@@ -98,6 +99,7 @@ export const addInternship = (internshipData: Omit<Internship, 'id' | 'logo' | '
             'Ensure the performance, quality, and responsiveness of applications.'
         ],
         perks: internshipData.perks || ['Flexible work hours', 'Mentorship program'],
+        customQuestions: internshipData.customQuestions || '',
     };
     const updatedInternships = [newInternship, ...internships];
     setInStorage(INTERNSHIPS_STORAGE_KEY, updatedInternships);
@@ -135,4 +137,29 @@ export const applyForInternship = (internshipId: string, studentProfile: Student
     
     setInStorage(APPLICATIONS_STORAGE_KEY, updatedApplications);
     return true;
+};
+
+// --- Interview Result Management Functions ---
+
+export const saveInterviewResult = (
+    internshipId: string, 
+    studentEmail: string, 
+    conversationHistory: Message[], 
+    summary: string
+) => {
+    const results = getFromStorage<InterviewResult[]>(INTERVIEW_RESULTS_STORAGE_KEY, []);
+    const newResult: InterviewResult = { internshipId, studentEmail, conversationHistory, summary };
+    
+    // Remove any previous result for the same student and internship to avoid duplicates
+    const updatedResults = results.filter(
+        r => !(r.internshipId === internshipId && r.studentEmail === studentEmail)
+    );
+    updatedResults.push(newResult);
+    
+    setInStorage(INTERVIEW_RESULTS_STORAGE_KEY, updatedResults);
+};
+
+export const getInterviewResult = (internshipId: string, studentEmail: string): InterviewResult | undefined => {
+    const results = getFromStorage<InterviewResult[]>(INTERVIEW_RESULTS_STORAGE_KEY, []);
+    return results.find(r => r.internshipId === internshipId && r.studentEmail === studentEmail);
 };

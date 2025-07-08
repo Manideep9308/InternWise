@@ -15,6 +15,7 @@ export type Internship = {
   responsibilities: string[];
   skills: string[];
   perks: string[];
+  customQuestions?: string;
 };
 
 export const StudentProfileSchema = z.object({
@@ -26,3 +27,16 @@ export const StudentProfileSchema = z.object({
 });
 
 export type StudentProfile = z.infer<typeof StudentProfileSchema>;
+
+export const MessageSchema = z.object({
+    role: z.enum(['user', 'assistant']),
+    content: z.string(),
+});
+export type Message = z.infer<typeof MessageSchema>;
+
+export type InterviewResult = {
+    studentEmail: string;
+    internshipId: string;
+    conversationHistory: Message[];
+    summary: string;
+};
