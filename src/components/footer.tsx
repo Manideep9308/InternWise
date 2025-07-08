@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import { Logo } from './logo';
 import { Button } from './ui/button';
@@ -33,15 +34,15 @@ export function Footer() {
                 <li><Link href="/ai-coach" className="text-foreground/70 hover:text-primary">AI Interview Coach</Link></li>
                 <li><Link href="/hiring-manager-simulator" className="text-foreground/70 hover:text-primary">Resume Review</Link></li>
                 <li><Link href="/profile" className="text-foreground/70 hover:text-primary">My Profile</Link></li>
-                <li><Link href="#" className="text-foreground/70 hover:text-primary">My Applications</Link></li>
+                <li><Link href="/my-applications" className="text-foreground/70 hover:text-primary">My Applications</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold font-headline">For Employers</h4>
               <ul className="space-y-2 mt-4 text-sm">
                 <li><Link href="/post-internship" className="text-foreground/70 hover:text-primary">Post an Internship</Link></li>
-                <li><Link href="#" className="text-foreground/70 hover:text-primary">View Applicants</Link></li>
-                <li><Link href="#" className="text-foreground/70 hover:text-primary">Employer Login</Link></li>
+                <li><Link href="/employer/dashboard" className="text-foreground/70 hover:text-primary">View Applicants</Link></li>
+                <li><Link href="/login" className="text-foreground/70 hover:text-primary">Employer Login</Link></li>
               </ul>
             </div>
             <div>
