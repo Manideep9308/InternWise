@@ -16,6 +16,7 @@ export type Internship = {
   skills: string[];
   perks: string[];
   customQuestions?: string;
+  isInterviewRequired?: boolean;
 };
 
 export const StudentProfileSchema = z.object({

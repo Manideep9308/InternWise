@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { addInternship } from '@/lib/internship-data-manager';
 import { ArrowLeft } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export default function PostInternshipPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,6 +62,7 @@ export default function PostInternshipPage() {
             description: data.description as string,
             skills: (data.skills as string).split(',').map(s => s.trim()),
             customQuestions: data.customQuestions as string,
+            isInterviewRequired: data.requireInterview === 'on',
         });
 
         toast({
@@ -153,6 +155,17 @@ export default function PostInternshipPage() {
                 <Label htmlFor="customQuestions">Custom Interview Questions (optional)</Label>
                 <Textarea id="customQuestions" name="customQuestions" rows={3} placeholder="e.g., Describe a challenging project., Why do you want to work here?" />
                 <p className="text-xs text-muted-foreground">Add comma-separated questions. If provided, the AI coach will ask these instead of generating its own.</p>
+              </div>
+
+              <div className="space-y-2 border-t pt-6">
+                <Label>Application Settings</Label>
+                 <div className="flex items-center space-x-2 pt-2">
+                    <Checkbox id="requireInterview" name="requireInterview" />
+                    <Label htmlFor="requireInterview" className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                        Require AI Interview before student can apply?
+                    </Label>
+                </div>
+                <p className="text-xs text-muted-foreground">If checked, students must complete a mock interview to submit their application.</p>
               </div>
               
               <div className="space-y-2">

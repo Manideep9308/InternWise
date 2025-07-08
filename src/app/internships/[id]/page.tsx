@@ -19,7 +19,7 @@ export default function InternshipDetailPage() {
   const params = useParams();
   const id = params.id as string;
   const router = useRouter();
-  const [internship, setInternship] = useState<Internship | null | undefined>(null);
+  const [internship, setInternship] = useState<Internship | null | undefined>(undefined);
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [hasUserApplied, setHasUserApplied] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
@@ -60,6 +60,15 @@ export default function InternshipDetailPage() {
       router.push('/upload-resume');
       return;
     }
+    
+    if (internship?.isInterviewRequired && !hasUserApplied) {
+        toast({
+            title: "Interview Required",
+            description: "This internship requires a mock interview. You will be redirected to the AI Coach.",
+        });
+        router.push(`/ai-coach?internshipId=${id}&apply=true`);
+        return;
+    }
 
     setIsApplying(true);
     const success = applyForInternship(id, profile);
@@ -80,10 +89,6 @@ export default function InternshipDetailPage() {
   };
 
   if (internship === undefined) {
-    notFound();
-  }
-
-  if (internship === null) {
       return (
         <div className="bg-secondary">
           <div className="container mx-auto py-12 px-4">
@@ -118,6 +123,10 @@ export default function InternshipDetailPage() {
         </div>
       </div>
       );
+  }
+
+  if (internship === null) {
+    notFound();
   }
 
   return (

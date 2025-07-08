@@ -56,7 +56,7 @@ export const getInternshipsByCompany = (companyName: string): Internship[] => {
     return internships.filter(i => i.company.toLowerCase() === companyName.toLowerCase());
 };
 
-export const addInternship = (internshipData: Omit<Internship, 'id' | 'logo' | 'postedDate' | 'applicants' | 'responsibilities' | 'perks'> & {responsibilities?: string[], perks?:string[]}): Internship => {
+export const addInternship = (internshipData: Omit<Internship, 'id' | 'logo' | 'postedDate' | 'applicants' | 'responsibilities' | 'perks'> & {responsibilities?: string[], perks?:string[], isInterviewRequired?: boolean}): Internship => {
     const internships = getInternships();
     const newInternship: Internship = {
         ...internshipData,
@@ -71,6 +71,7 @@ export const addInternship = (internshipData: Omit<Internship, 'id' | 'logo' | '
         ],
         perks: internshipData.perks || ['Flexible work hours', 'Mentorship program'],
         customQuestions: internshipData.customQuestions || '',
+        isInterviewRequired: internshipData.isInterviewRequired || false,
     };
     const updatedInternships = [newInternship, ...internships];
     setInStorage(INTERNSHIPS_STORAGE_KEY, updatedInternships);

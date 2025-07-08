@@ -5,7 +5,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { interviewCoach } from '@/ai/flows/ai-interview-coach';
 import { summarizeInterview } from '@/ai/flows/summarize-interview';
 import { textToSpeech } from '@/ai/flows/text-to-speech';
-import { saveInterviewResult } from '@/lib/internship-data-manager';
+import { saveInterviewResult, applyForInternship } from '@/lib/internship-data-manager';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
@@ -22,10 +22,17 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/t
 interface InterviewCoachChatProps {
   studentProfile: StudentProfile;
   internships: Internship[];
+  preselectedInternshipId?: string | null;
+  shouldApplyAfter?: boolean;
 }
 
-export function InterviewCoachChat({ studentProfile, internships }: InterviewCoachChatProps) {
-  const [selectedInternshipId, setSelectedInternshipId] = useState<string | null>(null);
+export function InterviewCoachChat({ 
+    studentProfile, 
+    internships, 
+    preselectedInternshipId, 
+    shouldApplyAfter 
+}: InterviewCoachChatProps) {
+  const [selectedInternshipId, setSelectedInternshipId] = useState<string | null>(preselectedInternshipId || null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -47,6 +54,19 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
   const speechTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const studentProfileString = `Name: ${studentProfile.name}, Education: ${studentProfile.education}, Skills: ${studentProfile.skills}, About: ${studentProfile.about}`;
+  
+  const handleResetChat = useCallback(() => {
+    setMessages([]);
+    setSummary('');
+    setIsSummaryDialogOpen(false);
+    if (audioRef.current) {
+        audioRef.current.pause();
+    }
+    if (isRecording) {
+      recognitionRef.current?.stop();
+    }
+    setSpeakingMessageIndex(null);
+  }, [isRecording]);
 
   const handleSendMessage = useCallback(async () => {
     if (!inputMessage.trim() || !selectedInternshipId) {
@@ -107,6 +127,14 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
   useEffect(() => {
     setIsSpeechSupported('SpeechRecognition' in window || 'webkitSpeechRecognition' in window);
   }, []);
+
+  useEffect(() => {
+    if (preselectedInternshipId) {
+      setSelectedInternshipId(preselectedInternshipId);
+      handleResetChat();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preselectedInternshipId]);
 
   useEffect(() => {
     if (!isSpeechSupported) return;
@@ -252,6 +280,14 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
                 description: "The employer can now view your interview results."
             });
         }
+        
+        if (shouldApplyAfter && selectedInternshipId && studentProfile.email) {
+            applyForInternship(selectedInternshipId, studentProfile);
+            toast({
+                title: "Application Submitted!",
+                description: `Your application for ${selectedInternship?.title} has been automatically submitted.`,
+            });
+        }
 
     } catch (error) {
         console.error('Error summarizing interview:', error);
@@ -264,18 +300,6 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
     setIsSummarizing(false);
   };
   
-  const handleResetChat = () => {
-    setMessages([]);
-    setSummary('');
-    setIsSummaryDialogOpen(false);
-    if (audioRef.current) {
-        audioRef.current.pause();
-    }
-    if (isRecording) {
-      recognitionRef.current?.stop();
-    }
-    setSpeakingMessageIndex(null);
-  };
 
   const handleMicClick = () => {
     if (!recognitionRef.current) return;
@@ -297,7 +321,11 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
     <>
       <Card className="h-[70vh] flex flex-col">
         <CardHeader className="flex flex-row items-center justify-between border-b p-4">
-          <Select onValueChange={(value) => { setSelectedInternshipId(value); handleResetChat(); }} value={selectedInternshipId || ''}>
+          <Select 
+            onValueChange={(value) => { setSelectedInternshipId(value); handleResetChat(); }} 
+            value={selectedInternshipId || ''}
+            disabled={!!preselectedInternshipId}
+          >
             <SelectTrigger className="w-full md:w-[350px]">
               <SelectValue placeholder="Select an internship to practice for..." />
             </SelectTrigger>
@@ -323,7 +351,8 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
                   <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
                       <Bot className="h-12 w-12 mb-4"/>
                       <p>You've selected to practice for <span className="font-semibold text-foreground">{selectedInternship?.title}</span>.</p>
-                      <p>Say "hi", or press the mic to start!</p>
+                      {shouldApplyAfter && <p className="text-sm mt-1">(This is a required interview for your application)</p>}
+                      <p className="mt-2">Say "hi", or press the mic to start!</p>
                   </div>
               ) : (
                   messages.map((message, index) => (
@@ -410,6 +439,7 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
                 <AlertDialogTitle>Interview Performance Summary</AlertDialogTitle>
                 <AlertDialogDescription>
                     Here is a summary of your performance based on the mock interview.
+                    {shouldApplyAfter && " Your application has now been submitted."}
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <ScrollArea className="h-[50vh] pr-6 rounded-md border p-4">

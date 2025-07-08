@@ -2,36 +2,37 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { InterviewCoachChat } from '@/components/interview-coach-chat';
-import { mockStudentProfile } from '@/lib/mock-data';
 import type { StudentProfile, Internship } from '@/lib/types';
 import { Card, CardContent, CardFooter, CardHeader } from './ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getInternships } from '@/lib/internship-data-manager';
 import { Button } from './ui/button';
 import { Bot, Briefcase } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import { User } from 'lucide-react';
 
 export function AiCoachLoader() {
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [internships, setInternships] = useState<Internship[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const preselectedInternshipId = searchParams.get('internshipId');
+  const shouldApplyAfter = searchParams.get('apply') === 'true';
 
   useEffect(() => {
     const storedProfileData = localStorage.getItem('studentProfile');
     if (storedProfileData) {
       setProfile(JSON.parse(storedProfileData));
-    } else {
-      // Fallback to mock data if no profile is found, 
-      // so the feature is still usable for users who haven't created a profile.
-      setProfile(mockStudentProfile);
     }
     setInternships(getInternships());
     setIsLoading(false);
   }, []);
 
-  if (isLoading || !profile) {
+  if (isLoading) {
     // Show a loading state while we check for the profile
     return (
         <Card className="h-[70vh] flex flex-col">
@@ -53,6 +54,21 @@ export function AiCoachLoader() {
             </CardFooter>
       </Card>
     );
+  }
+
+  if (!profile) {
+    return (
+        <Alert>
+            <User className="h-4 w-4" />
+            <AlertTitle>Create a Profile to Use the AI Coach</AlertTitle>
+            <AlertDescription>
+                You need to create a profile first to start practicing for interviews.
+                <Button onClick={() => router.push('/upload-resume')} className="mt-4">
+                    Create Profile
+                </Button>
+            </AlertDescription>
+        </Alert>
+    )
   }
 
   if (internships.length === 0) {
@@ -77,6 +93,8 @@ export function AiCoachLoader() {
     <InterviewCoachChat 
       studentProfile={profile}
       internships={internships}
+      preselectedInternshipId={preselectedInternshipId}
+      shouldApplyAfter={shouldApplyAfter}
     />
   );
 }
