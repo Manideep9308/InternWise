@@ -194,9 +194,10 @@ export function InterviewCoachChat({ studentProfile, internships }: InterviewCoa
                     audioRef.current.src = result.audioDataUri;
                     audioRef.current.play();
                 }
-            } catch (err) {
+            } catch (err: any) {
                 console.error("Failed to generate or play audio", err);
-                if (err instanceof Error && (err.message.includes('429') || err.message.toLowerCase().includes('quota'))) {
+                const errorMessage = (err?.message || '').toLowerCase();
+                if (errorMessage.includes('429') || errorMessage.includes('quota')) {
                     toast({
                         title: "AI Voice Disabled",
                         description: "You've exceeded the free daily limit for audio generation. The interview will continue in text-only mode.",
