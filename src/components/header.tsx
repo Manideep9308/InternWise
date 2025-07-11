@@ -10,7 +10,7 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Separator } from './ui/separator';
 
-const navLinks = [
+const studentNavLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/internships', label: 'Internships', icon: Briefcase },
   { href: '/ai-coach', label: 'AI Coach', icon: Bot },
@@ -20,8 +20,17 @@ const navLinks = [
   { href: '/profile', label: 'Profile', icon: User },
 ];
 
+const employerNavLinks = [
+    { href: '/employer/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/post-internship', label: 'Post Internship', icon: Briefcase },
+]
+
 export function Header() {
   const pathname = usePathname();
+
+  const isEmployerRoute = pathname.startsWith('/employer') || pathname.startsWith('/post-internship');
+
+  const navLinks = isEmployerRoute ? employerNavLinks : studentNavLinks;
 
   const NavLink = ({ href, label, icon: Icon }: typeof navLinks[0]) => (
     <Link href={href} passHref>
@@ -59,12 +68,13 @@ export function Header() {
           {navLinks.map((link) => (
             <NavLink key={link.href} {...link} />
           ))}
-            <Link href="/login" passHref>
-              <Button variant="outline" className="ml-4">Login</Button>
-            </Link>
-            <Link href="/post-internship" passHref>
-              <Button>Post Internship</Button>
-            </Link>
+          <Separator orientation="vertical" className="h-6 mx-2"/>
+          <Link href="/login" passHref>
+            <Button variant="outline">Login</Button>
+          </Link>
+          <Link href="/signup" passHref>
+            <Button>Sign Up</Button>
+          </Link>
         </nav>
         <div className="md:hidden">
           <Sheet>
@@ -73,20 +83,20 @@ export function Header() {
                 <Menu />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-full sm:w-[320px]">
+            <SheetContent side="right" className="w-full sm:w-[320px] p-0">
+              <div className="p-4 flex justify-between items-center border-b">
+                  <Link href="/" passHref>
+                      <SheetClose>
+                          <Logo />
+                      </SheetClose>
+                  </Link>
+                  <SheetClose asChild>
+                      <Button variant="ghost" size="icon">
+                          <X />
+                      </Button>
+                  </SheetClose>
+              </div>
               <div className="p-4">
-                <div className="flex justify-between items-center mb-6">
-                    <Link href="/" passHref>
-                        <SheetClose>
-                            <Logo />
-                        </SheetClose>
-                    </Link>
-                    <SheetClose asChild>
-                        <Button variant="ghost" size="icon">
-                            <X />
-                        </Button>
-                    </SheetClose>
-                </div>
                 <div className="flex flex-col gap-2">
                   {navLinks.map((link) => (
                     <NavLinkMobile key={link.href} {...link} />
@@ -102,9 +112,11 @@ export function Header() {
                         </Button>
                     </Link>
                   </SheetClose>
-                  <SheetClose asChild>
-                    <Link href="/post-internship" passHref>
-                        <Button size="lg" className="w-full">Post Internship</Button>
+                   <SheetClose asChild>
+                    <Link href="/signup" passHref>
+                        <Button className="w-full">
+                            Sign Up
+                        </Button>
                     </Link>
                   </SheetClose>
                 </div>

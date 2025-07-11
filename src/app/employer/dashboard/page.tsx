@@ -18,19 +18,16 @@ export default function EmployerDashboardPage() {
     const router = useRouter();
 
     useEffect(() => {
-        // For prototype purposes, we get the company name from localStorage
         const storedCompanyName = localStorage.getItem('employerCompany');
         if (storedCompanyName) {
             setCompanyName(storedCompanyName);
             const internships = getInternshipsByCompany(storedCompanyName);
-            // We enrich the internship data with the real applicant count
             const internshipsWithApplicantCounts = internships.map(internship => ({
                 ...internship,
                 applicants: getApplicantsForInternship(internship.id).length,
             }));
             setPostedInternships(internshipsWithApplicantCounts);
         } else {
-            // If no company is "logged in", redirect to login
             router.push('/login');
         }
         setIsLoading(false);
