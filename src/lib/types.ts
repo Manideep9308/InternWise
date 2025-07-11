@@ -21,7 +21,7 @@ export type Internship = {
 
 export const StudentProfileSchema = z.object({
   name: z.string().describe("The full name of the student."),
-  email: z.string().email().describe("The student's email address."),
+  email: z.string().describe("The student's email address."),
   education: z.string().describe("The student's educational background."),
   skills: z.string().describe("A comma-separated list of the student's skills."),
   about: z.string().describe("A professional summary or 'about me' section for the student."),
@@ -75,3 +75,22 @@ export const AnalyzeApplicantPoolOutputSchema = z.object({
 export type AnalyzeApplicantPoolOutput = z.infer<
   typeof AnalyzeApplicantPoolOutputSchema
 >;
+
+export const OptimizeResumeInputSchema = z.object({
+  studentProfile: z.string().describe("The student's full profile content, including about section, skills, and projects."),
+  jobDescription: z.string().describe("The full text of the target job description."),
+});
+export type OptimizeResumeInput = z.infer<typeof OptimizeResumeInputSchema>;
+
+const SuggestionSchema = z.object({
+  originalText: z.string().describe("The original text from the student's profile that could be improved."),
+  suggestedText: z.string().describe("The improved, rewritten version of the text."),
+  reasoning: z.string().describe("A brief explanation of why the suggestion improves the resume for the target job (e.g., 'Adds quantification', 'Uses stronger action verb', 'Aligns with job description keyword')."),
+});
+
+export const OptimizeResumeOutputSchema = z.object({
+  overallFeedback: z.string().describe("A brief, high-level summary of how the resume can be better tailored to the job description."),
+  suggestedImprovements: z.array(SuggestionSchema).describe("A list of specific, actionable suggestions to improve the resume wording."),
+  missingKeywords: z.array(z.string()).describe("A list of important keywords from the job description that are missing from the resume and should be added if the student has relevant experience."),
+});
+export type OptimizeResumeOutput = z.infer<typeof OptimizeResumeOutputSchema>;

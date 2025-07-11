@@ -9,26 +9,13 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {
+  OptimizeResumeInputSchema,
+  OptimizeResumeOutputSchema,
+  type OptimizeResumeInput,
+  type OptimizeResumeOutput,
+} from '@/lib/types';
 
-export const OptimizeResumeInputSchema = z.object({
-  studentProfile: z.string().describe("The student's full profile content, including about section, skills, and projects."),
-  jobDescription: z.string().describe("The full text of the target job description."),
-});
-export type OptimizeResumeInput = z.infer<typeof OptimizeResumeInputSchema>;
-
-const SuggestionSchema = z.object({
-  originalText: z.string().describe("The original text from the student's profile that could be improved."),
-  suggestedText: z.string().describe("The improved, rewritten version of the text."),
-  reasoning: z.string().describe("A brief explanation of why the suggestion improves the resume for the target job (e.g., 'Adds quantification', 'Uses stronger action verb', 'Aligns with job description keyword')."),
-});
-
-export const OptimizeResumeOutputSchema = z.object({
-  overallFeedback: z.string().describe("A brief, high-level summary of how the resume can be better tailored to the job description."),
-  suggestedImprovements: z.array(SuggestionSchema).describe("A list of specific, actionable suggestions to improve the resume wording."),
-  missingKeywords: z.array(z.string()).describe("A list of important keywords from the job description that are missing from the resume and should be added if the student has relevant experience."),
-});
-export type OptimizeResumeOutput = z.infer<typeof OptimizeResumeOutputSchema>;
 
 export async function optimizeResume(input: OptimizeResumeInput): Promise<OptimizeResumeOutput> {
   return optimizeResumeFlow(input);
