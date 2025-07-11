@@ -12,3 +12,4 @@ import '@/ai/flows/text-to-speech.ts';
 import '@/ai/flows/career-path-simulator.ts';
 import '@/ai/flows/analyze-applicant-pool.ts';
 import '@/ai/flows/match-students.ts';
+import '@/ai/flows/optimize-resume.ts';
