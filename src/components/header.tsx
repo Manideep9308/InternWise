@@ -11,31 +11,22 @@ import { cn } from '@/lib/utils';
 import { Separator } from './ui/separator';
 import { useState, useEffect } from 'react';
 
-const studentNavLinks = [
+const navLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/internships', label: 'Internships', icon: Briefcase },
   { href: '/ai-coach', label: 'AI Coach', icon: Bot },
-  { href: '/hiring-manager-simulator', label: 'Resume Review', icon: UserCheck },
-  { href: '/career-path-simulator', label: 'Career Path', icon: TrendingUp },
-  { href: '/my-applications', label: 'My Applications', icon: ClipboardList },
+  { href: '/my-applications', label: 'Applications', icon: ClipboardList },
   { href: '/profile', label: 'Profile', icon: User },
+  { href: '/employer/dashboard', label: 'Employer', icon: UserCheck },
 ];
-
-const employerNavLinks = [
-    { href: '/employer/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/post-internship', label: 'Post Internship', icon: Briefcase },
-]
 
 export function Header() {
   const pathname = usePathname();
-  const [isClient, setIsClient] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
+    setIsMounted(true);
   }, []);
-
-  const isEmployerRoute = pathname.startsWith('/employer') || pathname.startsWith('/post-internship');
-  const navLinks = isEmployerRoute ? employerNavLinks : studentNavLinks;
 
   const NavLink = ({ href, label, icon: Icon }: typeof navLinks[0]) => (
     <Link href={href} passHref>
@@ -70,7 +61,7 @@ export function Header() {
           <Logo />
         </Link>
         
-        {isClient ? (
+        {isMounted && (
             <>
                 <nav className="hidden md:flex items-center gap-1">
                 {navLinks.map((link) => (
@@ -133,7 +124,7 @@ export function Header() {
                 </Sheet>
                 </div>
             </>
-        ) : null}
+        )}
       </div>
     </header>
   );
