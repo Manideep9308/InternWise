@@ -65,7 +65,12 @@ const careerPathSimulatorFlow = ai.defineFlow(
     outputSchema: CareerPathSimulatorOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    try {
+      const {output} = await prompt(input);
+      return output!;
+    } catch(e) {
+      console.error(e);
+      throw e;
+    }
   }
 );
