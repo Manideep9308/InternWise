@@ -136,4 +136,5 @@ export const mockStudentProfile: StudentProfile = {
   education: 'B.S. in Computer Science, Stanford University (2025)',
   skills: 'React, Node.js, Python, UI/UX Design, Figma, Project Management',
   about: 'A passionate and driven computer science student with a keen interest in developing innovative software solutions. Eager to apply my skills in a challenging and growth-oriented internship environment. Proven ability to learn quickly and collaborate effectively in team settings.',
+  projects: 'Developed a full-stack e-commerce website using the MERN stack. Created a mobile app for real-time chat using React Native and Firebase.'
 };

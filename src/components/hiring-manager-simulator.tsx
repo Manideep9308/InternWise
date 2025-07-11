@@ -20,7 +20,7 @@ export function HiringManagerSimulator({ studentProfile }: HiringManagerSimulato
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const studentProfileString = `Name: ${studentProfile.name}\nEducation: ${studentProfile.education}\nSkills: ${studentProfile.skills}\nAbout: ${studentProfile.about}`;
+  const studentProfileString = `Name: ${studentProfile.name}\nEducation: ${studentProfile.education}\nSkills: ${studentProfile.skills}\nProjects: ${studentProfile.projects || 'N/A'}\nAbout: ${studentProfile.about}`;
 
   const handleSubmit = async () => {
     if (!jobDescription.trim()) {

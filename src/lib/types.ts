@@ -25,6 +25,7 @@ export const StudentProfileSchema = z.object({
   education: z.string().describe("The student's educational background."),
   skills: z.string().describe("A comma-separated list of the student's skills."),
   about: z.string().describe("A professional summary or 'about me' section for the student."),
+  projects: z.string().optional().describe("A description of the student's projects."),
 });
 
 export type StudentProfile = z.infer<typeof StudentProfileSchema>;

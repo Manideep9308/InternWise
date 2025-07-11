@@ -53,7 +53,7 @@ export function InterviewCoachChat({
   const wasRecordingRef = useRef(false);
   const speechTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const studentProfileString = `Name: ${studentProfile.name}, Education: ${studentProfile.education}, Skills: ${studentProfile.skills}, About: ${studentProfile.about}`;
+  const studentProfileString = `Name: ${studentProfile.name}, Education: ${studentProfile.education}, Skills: ${studentProfile.skills}, Projects: ${studentProfile.projects || 'N/A'}, About: ${studentProfile.about}`;
   
   const handleResetChat = useCallback(() => {
     setMessages([]);

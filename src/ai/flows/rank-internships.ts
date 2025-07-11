@@ -25,14 +25,13 @@ const InternshipSchema = z.object({
   responsibilities: z.array(z.string()),
   skills: z.array(z.string()),
   perks: z.array(z.string()),
-  logo: z.string(),
 });
 
 const RankInternshipsInputSchema = z.object({
   studentProfile: z
     .string()
     .describe(
-      "The student's profile information, including skills, experience, and about section."
+      "The student's profile information, including skills, experience, projects, and about section."
     ),
   internships: z
     .array(InternshipSchema)
@@ -72,7 +71,7 @@ const prompt = ai.definePrompt({
   
   Analyze the provided student profile and the list of available internships.
   
-  Your task is to identify the top 5 internships that are the best match for the student. Consider their skills, education, professional summary, and any implied interests. Match them against the internship's requirements and description.
+  Your task is to identify the top 5 internships that are the best match for the student. Consider their skills, education, projects, professional summary, and any implied interests. Match them against the internship's requirements and description.
   
   For each of your top 5 recommendations, provide a concise, one-sentence justification explaining *why* it is a strong match for this specific student.
   

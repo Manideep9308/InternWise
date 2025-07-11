@@ -8,15 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { Bot, Loader2, Sparkles } from 'lucide-react';
+import type { StudentProfile } from '@/lib/types';
 
 interface CoverLetterGeneratorProps {
   jobDescription: string;
-  studentProfile: {
-    name: string;
-    education: string;
-    skills: string;
-    about: string;
-  };
+  studentProfile: StudentProfile;
 }
 
 export function CoverLetterGenerator({ jobDescription, studentProfile }: CoverLetterGeneratorProps) {
@@ -29,6 +25,7 @@ export function CoverLetterGenerator({ jobDescription, studentProfile }: CoverLe
     Name: ${studentProfile.name}
     Education: ${studentProfile.education}
     Skills: ${studentProfile.skills}
+    Projects: ${studentProfile.projects || 'N/A'}
     About: ${studentProfile.about}
   `;
 

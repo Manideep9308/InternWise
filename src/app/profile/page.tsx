@@ -18,6 +18,7 @@ const initialProfile: StudentProfile = {
   education: '',
   skills: '',
   about: '',
+  projects: '',
 };
 
 export default function ProfilePage() {
@@ -32,7 +33,7 @@ export default function ProfilePage() {
     if (storedProfileData) {
       try {
         const storedProfile = JSON.parse(storedProfileData);
-        setProfile(storedProfile);
+        setProfile(prev => ({...prev, ...storedProfile}));
       } catch (e) {
           console.error("Failed to parse student profile from localStorage", e);
           // If data is corrupt, start with a clean slate.
@@ -102,6 +103,10 @@ export default function ProfilePage() {
               <div className="space-y-2">
                 <Label htmlFor="about">About Me</Label>
                 <Textarea id="about" name="about" value={profile.about} onChange={handleInputChange} rows={5} placeholder="Tell us a little about yourself..."/>
+              </div>
+               <div className="space-y-2">
+                <Label htmlFor="projects">Projects</Label>
+                <Textarea id="projects" name="projects" value={profile.projects || ''} onChange={handleInputChange} rows={5} placeholder="Describe your key projects. Include what you built, the technologies used, and your role."/>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="resume">Resume</Label>

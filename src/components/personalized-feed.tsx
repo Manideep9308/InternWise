@@ -40,7 +40,7 @@ export function PersonalizedFeed() {
       const runRanking = async () => {
         setIsLoading(true);
         try {
-          const studentProfileString = `Name: ${profile.name}, Education: ${profile.education}, Skills: ${profile.skills}, About: ${profile.about}`;
+          const studentProfileString = `Name: ${profile.name}, Education: ${profile.education}, Skills: ${profile.skills}, Projects: ${profile.projects || 'N/A'}, About: ${profile.about}`;
           
           const result = await rankInternships({
             studentProfile: studentProfileString,
