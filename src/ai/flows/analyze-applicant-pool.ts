@@ -53,7 +53,16 @@ const analyzeApplicantPoolFlow = ai.defineFlow(
     outputSchema: AnalyzeApplicantPoolOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
-    return output!;
+    try {
+      const { output } = await prompt(input);
+      return output!;
+    } catch (error) {
+      console.error('Error in analyzeApplicantPoolFlow:', error);
+      // Return an empty structure on failure to avoid breaking the UI
+      return {
+        topSkills: [],
+        universityDistribution: [],
+      };
+    }
   }
 );
