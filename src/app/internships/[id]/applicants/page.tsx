@@ -43,19 +43,18 @@ function ApplicantsPageComponent() {
     const [isMatching, setIsMatching] = useState(false);
     const [suggestedStudents, setSuggestedStudents] = useState<SuggestedStudent[]>([]);
 
-    const isNew = searchParams.get('new') === 'true';
-
-    const handleMatchStudents = useCallback(async (internshipToMatch: Internship) => {
+    const handleMatchStudents = useCallback(async () => {
+        if (!internship) return;
         setIsMatching(true);
         setSuggestedStudents([]);
         try {
             const allProfiles = getAllStudentProfiles();
             const result = await matchStudentsToInternship({
                 internship: {
-                    title: internshipToMatch.title,
-                    description: internshipToMatch.description,
-                    requiredSkills: internshipToMatch.skills,
-                    location: internshipToMatch.location,
+                    title: internship.title,
+                    description: internship.description,
+                    requiredSkills: internship.skills,
+                    location: internship.location,
                 },
                 studentProfiles: allProfiles,
             });
@@ -67,7 +66,7 @@ function ApplicantsPageComponent() {
         } finally {
             setIsMatching(false);
         }
-    }, [toast]);
+    }, [internship, toast]);
 
     useEffect(() => {
         if (!id) return;
@@ -82,14 +81,16 @@ function ApplicantsPageComponent() {
                 return { ...applicant, interviewResult };
             });
             setApplicants(applicantsWithResults);
-
-            if (isNew) {
-                handleMatchStudents(foundInternship);
+            
+            // Auto-trigger for new internships
+            if (searchParams.get('new') === 'true') {
+                handleMatchStudents();
             }
+
         }
         
         setIsLoading(false);
-    }, [id, isNew, handleMatchStudents]);
+    }, [id, searchParams, handleMatchStudents]);
 
 
     const handleRankApplicants = async () => {
@@ -160,11 +161,11 @@ function ApplicantsPageComponent() {
                     <p className="text-xl text-primary font-semibold">{internship.title} at {internship.company}</p>
                 </div>
 
-                {(isNew || isMatching || suggestedStudents.length > 0) && (
+                {(isMatching || suggestedStudents.length > 0) && (
                     <Card className="mb-8 border-primary/20 shadow-lg">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2"><Sparkles className="text-primary"/> Suggested Candidates (AI-Picked)</CardTitle>
-                            <CardDescription>Our AI has proactively found these candidates. Invite them to apply!</CardDescription>
+                            <CardDescription>Our AI has proactively found these candidates from the student pool. Invite them to apply!</CardDescription>
                         </CardHeader>
                         <CardContent>
                              {isMatching ? (
@@ -191,7 +192,7 @@ function ApplicantsPageComponent() {
                     <CardHeader>
                         <CardTitle>Current Applications</CardTitle>
                         <CardDescription>
-                           Review and rank candidates who have applied to your internship.
+                           Review and rank candidates who have applied to your internship, or use our AI to suggest candidates.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -200,13 +201,22 @@ function ApplicantsPageComponent() {
                                 <Users className="mr-2 h-5 w-5"/>
                                 {applicants.length} Applicant(s)
                             </div>
-                            <Button onClick={handleRankApplicants} disabled={isRanking || applicants.length === 0} size="lg">
-                                {isRanking ? (
-                                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Analyzing...</>
-                                ) : (
-                                    <><Award className="mr-2 h-4 w-4" /> {hasBeenRanked ? 'Re-Rank Applicants' : 'Rank Applicants with AI'}</>
-                                )}
-                            </Button>
+                            <div className="flex flex-col md:flex-row gap-2">
+                                <Button onClick={handleMatchStudents} disabled={isMatching} size="lg" variant="outline">
+                                    {isMatching ? (
+                                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Searching...</>
+                                    ) : (
+                                        <><Sparkles className="mr-2 h-4 w-4" /> Suggest Candidates with AI</>
+                                    )}
+                                </Button>
+                                <Button onClick={handleRankApplicants} disabled={isRanking || applicants.length === 0} size="lg">
+                                    {isRanking ? (
+                                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Analyzing...</>
+                                    ) : (
+                                        <><Award className="mr-2 h-4 w-4" /> {hasBeenRanked ? 'Re-Rank Applicants' : 'Rank Applicants with AI'}</>
+                                    )}
+                                </Button>
+                            </div>
                         </div>
                         {applicants.length > 0 ? (
                             <div className="space-y-4">
@@ -217,7 +227,7 @@ function ApplicantsPageComponent() {
                         ) : (
                             <div className="text-center py-10 px-6 border-2 border-dashed rounded-lg">
                                 <p className="text-lg font-medium text-muted-foreground">No applicants yet.</p>
-                                <p className="text-sm text-muted-foreground">Check back later to see who has applied, or invite one of the suggested candidates.</p>
+                                <p className="text-sm text-muted-foreground">Click "Suggest Candidates with AI" to find potential matches.</p>
                             </div>
                         )}
                     </CardContent>
@@ -399,3 +409,5 @@ export default function ApplicantsPage() {
         </Suspense>
     );
 }
+
+    

@@ -34,10 +34,12 @@ export function Header() {
 
   useEffect(() => {
     setIsMounted(true);
-    // More robust check for employer pages
-    const employerPaths = ['/employer', '/post-internship'];
-    const isEmployerPath = employerPaths.some(p => pathname.startsWith(p)) || pathname.includes('/internships/') && pathname.includes('/applicants');
-    setIsEmployer(isEmployerPath);
+    // Check if the path belongs to the employer section.
+    if (pathname.startsWith('/employer') || pathname.startsWith('/post-internship') || pathname.match(/^\/internships\/[^/]+\/applicants$/)) {
+      setIsEmployer(true);
+    } else {
+      setIsEmployer(false);
+    }
   }, [pathname]);
 
   const NavLink = ({ href, label, icon: Icon }: typeof navLinks[0]) => (
@@ -152,3 +154,5 @@ export function Header() {
     </header>
   );
 }
+
+    
