@@ -46,3 +46,31 @@ export type StudentApplication = {
   internship: Internship;
   status: 'Applied' | 'Interview Complete';
 };
+
+// --- Schemas for AI Flows ---
+
+export const AnalyzeApplicantPoolInputSchema = z.object({
+  studentProfiles: z
+    .array(StudentProfileSchema)
+    .describe('A list of all student profiles to be analyzed.'),
+});
+export type AnalyzeApplicantPoolInput = z.infer<
+  typeof AnalyzeApplicantPoolInputSchema
+>;
+
+const ChartDataPointSchema = z.object({
+  name: z.string().describe('The name of the data point (e.g., a skill name or university name).'),
+  count: z.number().describe('The number of times this data point appeared in the applicant pool.'),
+});
+
+export const AnalyzeApplicantPoolOutputSchema = z.object({
+  topSkills: z
+    .array(ChartDataPointSchema)
+    .describe('A list of the top 5 most common skills among applicants.'),
+  universityDistribution: z
+    .array(ChartDataPointSchema)
+    .describe('A list of the top 5 universities applicants are from.'),
+});
+export type AnalyzeApplicantPoolOutput = z.infer<
+  typeof AnalyzeApplicantPoolOutputSchema
+>;
