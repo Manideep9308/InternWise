@@ -6,14 +6,17 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getInternshipsByCompany, getApplicantsForInternship } from '@/lib/internship-data-manager';
-import type { Internship } from '@/lib/types';
+import type { Internship, StudentProfile } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PlusCircle, Building, Users, ArrowRight } from 'lucide-react';
+import { PlusCircle, Building, Users, ArrowRight, BarChart2 } from 'lucide-react';
 import Link from 'next/link';
+import { ApplicantPoolChartsLoader } from '@/components/applicant-pool-charts-loader';
+import { Separator } from '@/components/ui/separator';
 
 export default function EmployerDashboardPage() {
     const [companyName, setCompanyName] = useState<string | null>(null);
     const [postedInternships, setPostedInternships] = useState<Internship[]>([]);
+    const [allApplicants, setAllApplicants] = useState<StudentProfile[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
@@ -22,11 +25,22 @@ export default function EmployerDashboardPage() {
         if (storedCompanyName) {
             setCompanyName(storedCompanyName);
             const internships = getInternshipsByCompany(storedCompanyName);
-            const internshipsWithApplicantCounts = internships.map(internship => ({
-                ...internship,
-                applicants: getApplicantsForInternship(internship.id).length,
-            }));
-            setPostedInternships(internshipsWithApplicantCounts);
+
+            const applicantsByInternship = internships.map(internship => {
+                const applicants = getApplicantsForInternship(internship.id);
+                return {
+                    ...internship,
+                    applicants: applicants.length,
+                    applicantProfiles: applicants
+                };
+            });
+
+            const allCompanyApplicants = applicantsByInternship.flatMap(i => i.applicantProfiles);
+            setAllApplicants(allCompanyApplicants);
+            
+            const internshipsWithCounts = applicantsByInternship.map(({ applicantProfiles, ...rest}) => rest);
+            setPostedInternships(internshipsWithCounts);
+
         } else {
             router.push('/login');
         }
@@ -39,6 +53,10 @@ export default function EmployerDashboardPage() {
                 <div className="flex justify-between items-center mb-10">
                     <Skeleton className="h-10 w-1/2" />
                     <Skeleton className="h-12 w-48" />
+                </div>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <Skeleton className="h-64 w-full" />
+                    <Skeleton className="h-64 w-full" />
                 </div>
                 <div className="space-y-4">
                     {[...Array(2)].map((_, i) => <Skeleton key={i} className="h-20 w-full" />)}
@@ -63,6 +81,21 @@ export default function EmployerDashboardPage() {
                         Post New Internship
                     </Button>
                 </div>
+
+                <Card className="mb-8">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <BarChart2 className="text-primary"/>
+                            Applicant Pool Analytics
+                        </CardTitle>
+                        <CardDescription>
+                            An AI-powered overview of all candidates who have applied to your internships.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <ApplicantPoolChartsLoader applicants={allApplicants} />
+                    </CardContent>
+                </Card>
 
                 <Card>
                     <CardHeader>
