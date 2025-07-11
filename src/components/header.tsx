@@ -29,12 +29,25 @@ const employerNavLinks = [
 export function Header() {
   const pathname = usePathname();
   const [isClient, setIsClient] = useState(false);
-  
+  const [isEmployerRoute, setIsEmployerRoute] = useState(false);
+
   useEffect(() => {
     setIsClient(true);
-  }, []);
+    setIsEmployerRoute(pathname.startsWith('/employer') || pathname.startsWith('/post-internship'));
+  }, [pathname]);
 
-  const isEmployerRoute = isClient && (pathname.startsWith('/employer') || pathname.startsWith('/post-internship'));
+  if (!isClient) {
+    // Render a static header on the server to prevent hydration mismatch
+    return (
+        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="container mx-auto flex h-16 items-center justify-between px-4">
+                <Link href="/" className="flex items-center gap-2">
+                    <Logo />
+                </Link>
+            </div>
+        </header>
+    )
+  }
 
   const navLinks = isEmployerRoute ? employerNavLinks : studentNavLinks;
 
