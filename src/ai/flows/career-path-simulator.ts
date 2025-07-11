@@ -69,8 +69,9 @@ const careerPathSimulatorFlow = ai.defineFlow(
       const {output} = await prompt(input);
       return output!;
     } catch(e) {
-      console.error(e);
-      throw e;
+      console.error("Error in careerPathSimulatorFlow:", e);
+      // Re-throw the error to be caught by the calling component in the UI
+      throw new Error("The AI service is currently unavailable. Please try again later.");
     }
   }
 );
