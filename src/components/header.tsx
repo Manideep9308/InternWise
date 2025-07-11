@@ -70,7 +70,7 @@ export function Header() {
           <Logo />
         </Link>
         
-        {isClient && (
+        {isClient ? (
             <>
                 <nav className="hidden md:flex items-center gap-1">
                 {navLinks.map((link) => (
@@ -133,7 +133,7 @@ export function Header() {
                 </Sheet>
                 </div>
             </>
-        )}
+        ) : null}
       </div>
     </header>
   );
