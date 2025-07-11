@@ -64,8 +64,9 @@ function ApplicantsPageComponent() {
         } catch (error) {
             console.error("Error matching students:", error);
             toast({ title: "AI Matching Failed", description: "Could not find suggested candidates at this time.", variant: "destructive" });
+        } finally {
+            setIsMatching(false);
         }
-        setIsMatching(false);
     }, [toast]);
 
     useEffect(() => {
