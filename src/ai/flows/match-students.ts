@@ -25,7 +25,7 @@ export type MatchStudentsInput = z.infer<typeof MatchStudentsInputSchema>;
 
 const MatchedStudentSchema = z.object({
   name: z.string().describe("The student's full name."),
-  email: z.string().email().describe("The student's email, to be used as a unique ID."),
+  email: z.string().describe("The student's email, to be used as a unique ID."),
   matchScore: z.number().describe('A match score from 0 to 100, representing how well the student fits the internship.'),
   skillsMatched: z.array(z.string()).describe('A list of skills the student possesses that match the internship requirements.'),
   justification: z.string().describe('A short, 1-sentence justification for why this student is a good match.'),
