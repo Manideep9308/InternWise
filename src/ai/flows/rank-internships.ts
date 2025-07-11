@@ -90,7 +90,13 @@ const rankInternshipsFlow = ai.defineFlow(
     outputSchema: RankInternshipsOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
-    return output!;
+    try {
+      const { output } = await prompt(input);
+      return output!;
+    } catch (e) {
+      console.error("Error in rankInternshipsFlow:", e);
+      // Re-throw the error to be caught by the calling component in the UI
+      throw new Error("The AI service is currently unavailable. Please try again later.");
+    }
   }
 );
