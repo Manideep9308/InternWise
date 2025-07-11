@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useMemo, Suspense } from 'react';
+import { useState, useEffect, useMemo, Suspense, useCallback } from 'react';
 import { notFound, useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -45,7 +45,7 @@ function ApplicantsPageComponent() {
 
     const isNew = searchParams.get('new') === 'true';
 
-    const handleMatchStudents = async (internshipToMatch: Internship) => {
+    const handleMatchStudents = useCallback(async (internshipToMatch: Internship) => {
         setIsMatching(true);
         setSuggestedStudents([]);
         try {
@@ -66,12 +66,14 @@ function ApplicantsPageComponent() {
             toast({ title: "AI Matching Failed", description: "Could not find suggested candidates at this time.", variant: "destructive" });
         }
         setIsMatching(false);
-    };
+    }, [toast]);
 
     useEffect(() => {
         if (!id) return;
+
         const foundInternship = getInternshipById(id);
         setInternship(foundInternship);
+        
         if (foundInternship) {
             const initialApplicants = getApplicantsForInternship(id);
              const applicantsWithResults = initialApplicants.map(applicant => {
@@ -83,11 +85,10 @@ function ApplicantsPageComponent() {
             if (isNew) {
                 handleMatchStudents(foundInternship);
             }
-
         }
+        
         setIsLoading(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [id, isNew]);
+    }, [id, isNew, handleMatchStudents]);
 
 
     const handleRankApplicants = async () => {
@@ -158,7 +159,7 @@ function ApplicantsPageComponent() {
                     <p className="text-xl text-primary font-semibold">{internship.title} at {internship.company}</p>
                 </div>
 
-                {isNew || isMatching || suggestedStudents.length > 0 ? (
+                {(isNew || isMatching || suggestedStudents.length > 0) && (
                     <Card className="mb-8 border-primary/20 shadow-lg">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2"><Sparkles className="text-primary"/> Suggested Candidates (AI-Picked)</CardTitle>
@@ -183,7 +184,7 @@ function ApplicantsPageComponent() {
                             )}
                         </CardContent>
                     </Card>
-                ) : null}
+                )}
 
                 <Card>
                     <CardHeader>

@@ -34,10 +34,10 @@ export function Header() {
 
   useEffect(() => {
     setIsMounted(true);
-    if (typeof window !== 'undefined') {
-        const employerCompany = localStorage.getItem('employerCompany');
-        setIsEmployer(!!employerCompany && pathname.startsWith('/employer'));
-    }
+    // More robust check for employer pages
+    const employerPaths = ['/employer', '/post-internship', '/applicants'];
+    const isEmployerPath = employerPaths.some(p => pathname.includes(p));
+    setIsEmployer(isEmployerPath);
   }, [pathname]);
 
   const NavLink = ({ href, label, icon: Icon }: typeof navLinks[0]) => (
