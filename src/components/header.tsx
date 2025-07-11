@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { Logo } from './logo';
-import { Briefcase, Bot, User, Menu, X, LogIn, UserCheck, LayoutDashboard, ClipboardList, TrendingUp } from 'lucide-react';
+import { Briefcase, Bot, User, Menu, X, LogIn, UserCheck, LayoutDashboard, ClipboardList, TrendingUp, UserCheck as ResumeReviewIcon } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from './ui/sheet';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -15,18 +15,30 @@ const navLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/internships', label: 'Internships', icon: Briefcase },
   { href: '/ai-coach', label: 'AI Coach', icon: Bot },
+  { href: '/hiring-manager-simulator', label: 'Resume Review', icon: ResumeReviewIcon },
+  { href: '/career-path-simulator', label: 'Career Path', icon: TrendingUp },
   { href: '/my-applications', label: 'Applications', icon: ClipboardList },
   { href: '/profile', label: 'Profile', icon: User },
-  { href: '/employer/dashboard', label: 'Employer', icon: UserCheck },
 ];
+
+const employerLinks = [
+    { href: '/employer/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/post-internship', label: 'Post Internship', icon: Briefcase },
+];
+
 
 export function Header() {
   const pathname = usePathname();
   const [isMounted, setIsMounted] = useState(false);
+  const [isEmployer, setIsEmployer] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
-  }, []);
+    if (typeof window !== 'undefined') {
+        const employerCompany = localStorage.getItem('employerCompany');
+        setIsEmployer(!!employerCompany && pathname.startsWith('/employer'));
+    }
+  }, [pathname]);
 
   const NavLink = ({ href, label, icon: Icon }: typeof navLinks[0]) => (
     <Link href={href} passHref>
@@ -54,6 +66,8 @@ export function Header() {
     </SheetClose>
   );
 
+  const activeLinks = isEmployer ? employerLinks : navLinks;
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -64,7 +78,7 @@ export function Header() {
         {isMounted && (
             <>
                 <nav className="hidden md:flex items-center gap-1">
-                {navLinks.map((link) => (
+                {activeLinks.map((link) => (
                     <NavLink key={link.href} {...link} />
                 ))}
                 <Separator orientation="vertical" className="h-6 mx-2"/>
@@ -97,7 +111,7 @@ export function Header() {
                     </div>
                     <div className="p-4">
                         <div className="flex flex-col gap-2">
-                        {navLinks.map((link) => (
+                        {activeLinks.map((link) => (
                             <NavLinkMobile key={link.href} {...link} />
                         ))}
                         </div>
