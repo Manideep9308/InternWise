@@ -30,7 +30,7 @@ export default function EmployerDashboardPage() {
                 const applicants = getApplicantsForInternship(internship.id);
                 return {
                     ...internship,
-                    applicants: applicants.length,
+                    applicantCount: applicants.length,
                     applicantProfiles: applicants
                 };
             });
@@ -39,7 +39,9 @@ export default function EmployerDashboardPage() {
             setAllApplicants(allCompanyApplicants);
             
             const internshipsWithCounts = applicantsByInternship.map(({ applicantProfiles, ...rest}) => rest);
-            setPostedInternships(internshipsWithCounts);
+            // Rename applicantCount to applicants for the final state
+            const finalInternships = internshipsWithCounts.map(({ applicantCount, ...rest}) => ({...rest, applicants: applicantCount}));
+            setPostedInternships(finalInternships);
 
         } else {
             router.push('/login');

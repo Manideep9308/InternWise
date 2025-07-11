@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import { notFound, useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,8 +27,7 @@ type RankedApplicantProfile = StudentProfile & {
 
 type SuggestedStudent = MatchStudentsOutput['matchedStudents'][0] & { inviteStatus?: 'Invited' | 'Viewed' | 'Applied' };
 
-
-export default function ApplicantsPage() {
+function ApplicantsPageComponent() {
     const params = useParams();
     const searchParams = useSearchParams();
     const id = params.id as string;
@@ -46,27 +45,7 @@ export default function ApplicantsPage() {
 
     const isNew = searchParams.get('new') === 'true';
 
-    useEffect(() => {
-        if (!id) return;
-        const foundInternship = getInternshipById(id);
-        setInternship(foundInternship);
-        if (foundInternship) {
-            const initialApplicants = getApplicantsForInternship(id);
-             const applicantsWithResults = initialApplicants.map(applicant => {
-                const interviewResult = getInterviewResult(id, applicant.email);
-                return { ...applicant, interviewResult };
-            });
-            setApplicants(applicantsWithResults);
-
-            if (isNew) {
-                handleMatchStudents(foundInternship);
-            }
-
-        }
-        setIsLoading(false);
-    }, [id, isNew]);
-
-     const handleMatchStudents = async (internshipToMatch: Internship) => {
+    const handleMatchStudents = async (internshipToMatch: Internship) => {
         setIsMatching(true);
         setSuggestedStudents([]);
         try {
@@ -88,6 +67,27 @@ export default function ApplicantsPage() {
         }
         setIsMatching(false);
     };
+
+    useEffect(() => {
+        if (!id) return;
+        const foundInternship = getInternshipById(id);
+        setInternship(foundInternship);
+        if (foundInternship) {
+            const initialApplicants = getApplicantsForInternship(id);
+             const applicantsWithResults = initialApplicants.map(applicant => {
+                const interviewResult = getInterviewResult(id, applicant.email);
+                return { ...applicant, interviewResult };
+            });
+            setApplicants(applicantsWithResults);
+
+            if (isNew) {
+                handleMatchStudents(foundInternship);
+            }
+
+        }
+        setIsLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [id, isNew]);
 
 
     const handleRankApplicants = async () => {
@@ -158,7 +158,7 @@ export default function ApplicantsPage() {
                     <p className="text-xl text-primary font-semibold">{internship.title} at {internship.company}</p>
                 </div>
 
-                {isMatching || suggestedStudents.length > 0 ? (
+                {isNew || isMatching || suggestedStudents.length > 0 ? (
                     <Card className="mb-8 border-primary/20 shadow-lg">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2"><Sparkles className="text-primary"/> Suggested Candidates (AI-Picked)</CardTitle>
@@ -170,11 +170,15 @@ export default function ApplicantsPage() {
                                     <Loader2 className="mr-3 h-5 w-5 animate-spin" />
                                     <span>Finding top candidates for you...</span>
                                 </div>
-                            ) : (
+                            ) : suggestedStudents.length > 0 ? (
                                 <div className="space-y-3">
                                     {suggestedStudents.map(student => (
                                         <SuggestedStudentCard key={student.email} student={student} />
                                     ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-10 text-muted-foreground">
+                                    <p>The AI couldn't find any suitable candidates from the current student pool.</p>
                                 </div>
                             )}
                         </CardContent>
@@ -384,4 +388,12 @@ function ApplicantCard({ applicant, onShowReport }: { applicant: RankedApplicant
             </div>
         </Card>
     )
+}
+
+export default function ApplicantsPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <ApplicantsPageComponent />
+        </Suspense>
+    );
 }
