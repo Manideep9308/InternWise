@@ -43,18 +43,18 @@ function ApplicantsPageComponent() {
     const [isMatching, setIsMatching] = useState(false);
     const [suggestedStudents, setSuggestedStudents] = useState<SuggestedStudent[]>([]);
 
-    const handleMatchStudents = useCallback(async () => {
-        if (!internship) return;
+    const handleMatchStudents = useCallback(async (currentInternship: Internship) => {
+        if (!currentInternship) return;
         setIsMatching(true);
         setSuggestedStudents([]);
         try {
             const allProfiles = getAllStudentProfiles();
             const result = await matchStudentsToInternship({
                 internship: {
-                    title: internship.title,
-                    description: internship.description,
-                    requiredSkills: internship.skills,
-                    location: internship.location,
+                    title: currentInternship.title,
+                    description: currentInternship.description,
+                    requiredSkills: currentInternship.skills,
+                    location: currentInternship.location,
                 },
                 studentProfiles: allProfiles,
             });
@@ -66,15 +66,15 @@ function ApplicantsPageComponent() {
         } finally {
             setIsMatching(false);
         }
-    }, [internship, toast]);
+    }, [toast]);
 
     useEffect(() => {
         if (!id) return;
 
         const foundInternship = getInternshipById(id);
-        setInternship(foundInternship);
         
         if (foundInternship) {
+            setInternship(foundInternship);
             const initialApplicants = getApplicantsForInternship(id);
              const applicantsWithResults = initialApplicants.map(applicant => {
                 const interviewResult = getInterviewResult(id, applicant.email);
@@ -84,9 +84,10 @@ function ApplicantsPageComponent() {
             
             // Auto-trigger for new internships
             if (searchParams.get('new') === 'true') {
-                handleMatchStudents();
+                handleMatchStudents(foundInternship);
             }
-
+        } else {
+             setInternship(null); // Explicitly set to null if not found
         }
         
         setIsLoading(false);
@@ -202,7 +203,7 @@ function ApplicantsPageComponent() {
                                 {applicants.length} Applicant(s)
                             </div>
                             <div className="flex flex-col md:flex-row gap-2">
-                                <Button onClick={handleMatchStudents} disabled={isMatching} size="lg" variant="outline">
+                                <Button onClick={() => handleMatchStudents(internship)} disabled={isMatching} size="lg" variant="outline">
                                     {isMatching ? (
                                         <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Searching...</>
                                     ) : (
@@ -409,5 +410,3 @@ export default function ApplicantsPage() {
         </Suspense>
     );
 }
-
-    
