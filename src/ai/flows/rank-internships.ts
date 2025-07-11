@@ -95,8 +95,8 @@ const rankInternshipsFlow = ai.defineFlow(
       return output!;
     } catch (e) {
       console.error("Error in rankInternshipsFlow:", e);
-      // Re-throw the error to be caught by the calling component in the UI
-      throw new Error("The AI service is currently unavailable. Please try again later.");
+      // Return an empty array on failure to avoid breaking the UI
+      return { recommendations: [] };
     }
   }
 );
