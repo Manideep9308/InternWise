@@ -1,15 +1,17 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { notFound, useParams, useRouter } from 'next/navigation';
+import { notFound, useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { getInternshipById, getApplicantsForInternship, getInterviewResult } from '@/lib/internship-data-manager';
+import { getInternshipById, getApplicantsForInternship, getInterviewResult, getAllStudentProfiles } from '@/lib/internship-data-manager';
 import { rankApplicants } from '@/ai/flows/rank-applicants';
+import { matchStudentsToInternship, type MatchStudentsOutput } from '@/ai/flows/match-students';
 import type { Internship, StudentProfile, InterviewResult, Message } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { Award, Bot, FileText, Loader2, Mail, School, Sparkles, User, Users, ArrowLeft, MessageSquareQuote } from 'lucide-react';
+import { Award, Bot, FileText, Loader2, Mail, School, Sparkles, User, Users, ArrowLeft, MessageSquareQuote, Send, Eye } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -23,16 +25,26 @@ type RankedApplicantProfile = StudentProfile & {
     interviewResult?: InterviewResult;
 };
 
+type SuggestedStudent = MatchStudentsOutput['matchedStudents'][0] & { inviteStatus?: 'Invited' | 'Viewed' | 'Applied' };
+
+
 export default function ApplicantsPage() {
     const params = useParams();
+    const searchParams = useSearchParams();
     const id = params.id as string;
     const router = useRouter();
+    const { toast } = useToast();
+
     const [internship, setInternship] = useState<Internship | null | undefined>(null);
     const [applicants, setApplicants] = useState<RankedApplicantProfile[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isRanking, setIsRanking] = useState(false);
     const [selectedReport, setSelectedReport] = useState<InterviewResult | null>(null);
-    const { toast } = useToast();
+
+    const [isMatching, setIsMatching] = useState(false);
+    const [suggestedStudents, setSuggestedStudents] = useState<SuggestedStudent[]>([]);
+
+    const isNew = searchParams.get('new') === 'true';
 
     useEffect(() => {
         if (!id) return;
@@ -45,9 +57,38 @@ export default function ApplicantsPage() {
                 return { ...applicant, interviewResult };
             });
             setApplicants(applicantsWithResults);
+
+            if (isNew) {
+                handleMatchStudents(foundInternship);
+            }
+
         }
         setIsLoading(false);
-    }, [id]);
+    }, [id, isNew]);
+
+     const handleMatchStudents = async (internshipToMatch: Internship) => {
+        setIsMatching(true);
+        setSuggestedStudents([]);
+        try {
+            const allProfiles = getAllStudentProfiles();
+            const result = await matchStudentsToInternship({
+                internship: {
+                    title: internshipToMatch.title,
+                    description: internshipToMatch.description,
+                    requiredSkills: internshipToMatch.skills,
+                    location: internshipToMatch.location,
+                },
+                studentProfiles: allProfiles,
+            });
+            setSuggestedStudents(result.matchedStudents);
+             toast({ title: "AI Found Potential Candidates!", description: "Check out the suggested students for your internship." });
+        } catch (error) {
+            console.error("Error matching students:", error);
+            toast({ title: "AI Matching Failed", description: "Could not find suggested candidates at this time.", variant: "destructive" });
+        }
+        setIsMatching(false);
+    };
+
 
     const handleRankApplicants = async () => {
         if (!internship || applicants.length === 0) return;
@@ -108,46 +149,73 @@ export default function ApplicantsPage() {
     return (
         <div className="bg-secondary min-h-screen">
             <div className="container mx-auto py-12 px-4">
-                 <Button variant="ghost" onClick={() => router.back()} className="mb-6">
+                 <Button variant="ghost" onClick={() => router.push('/employer/dashboard')} className="mb-6">
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back
+                    Back to Dashboard
                 </Button>
                 <div className="mb-10">
-                    <h1 className="text-4xl font-bold font-headline">Applicants</h1>
+                    <h1 className="text-4xl font-bold font-headline">Manage Applicants</h1>
                     <p className="text-xl text-primary font-semibold">{internship.title} at {internship.company}</p>
-                    <p className="text-muted-foreground mt-1">
-                        Review and rank candidates for your internship posting.
-                    </p>
                 </div>
 
-                <div className="flex flex-col md:flex-row gap-4 justify-between items-center mb-6">
-                    <div className="flex items-center text-lg font-medium">
-                        <Users className="mr-2 h-5 w-5"/>
-                        {applicants.length} Applicant(s)
-                    </div>
-                    <Button onClick={handleRankApplicants} disabled={isRanking || applicants.length === 0} size="lg">
-                        {isRanking ? (
-                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Analyzing...</>
-                        ) : (
-                            <><Sparkles className="mr-2 h-4 w-4" /> {hasBeenRanked ? 'Re-Rank with AI' : 'Rank with AI'}</>
-                        )}
-                    </Button>
-                </div>
-
-                {applicants.length > 0 ? (
-                    <div className="space-y-4">
-                        {applicants.map((applicant) => (
-                            <ApplicantCard key={applicant.email} applicant={applicant} onShowReport={setSelectedReport} />
-                        ))}
-                    </div>
-                ) : (
-                    <Card>
-                        <CardContent className="p-10 text-center text-muted-foreground">
-                            <p className="text-lg font-medium">No applicants yet.</p>
-                            <p>Check back later to see who has applied.</p>
+                {isMatching || suggestedStudents.length > 0 ? (
+                    <Card className="mb-8 border-primary/20 shadow-lg">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2"><Sparkles className="text-primary"/> Suggested Candidates (AI-Picked)</CardTitle>
+                            <CardDescription>Our AI has proactively found these candidates. Invite them to apply!</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                             {isMatching ? (
+                                <div className="flex items-center justify-center p-10 text-muted-foreground">
+                                    <Loader2 className="mr-3 h-5 w-5 animate-spin" />
+                                    <span>Finding top candidates for you...</span>
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {suggestedStudents.map(student => (
+                                        <SuggestedStudentCard key={student.email} student={student} />
+                                    ))}
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
-                )}
+                ) : null}
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Current Applications</CardTitle>
+                        <CardDescription>
+                           Review and rank candidates who have applied to your internship.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex flex-col md:flex-row gap-4 justify-between items-center mb-6">
+                            <div className="flex items-center text-lg font-medium">
+                                <Users className="mr-2 h-5 w-5"/>
+                                {applicants.length} Applicant(s)
+                            </div>
+                            <Button onClick={handleRankApplicants} disabled={isRanking || applicants.length === 0} size="lg">
+                                {isRanking ? (
+                                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Analyzing...</>
+                                ) : (
+                                    <><Award className="mr-2 h-4 w-4" /> {hasBeenRanked ? 'Re-Rank Applicants' : 'Rank Applicants with AI'}</>
+                                )}
+                            </Button>
+                        </div>
+                        {applicants.length > 0 ? (
+                            <div className="space-y-4">
+                                {applicants.map((applicant) => (
+                                    <ApplicantCard key={applicant.email} applicant={applicant} onShowReport={setSelectedReport} />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-10 px-6 border-2 border-dashed rounded-lg">
+                                <p className="text-lg font-medium text-muted-foreground">No applicants yet.</p>
+                                <p className="text-sm text-muted-foreground">Check back later to see who has applied, or invite one of the suggested candidates.</p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
              <AlertDialog open={!!selectedReport} onOpenChange={(open) => !open && setSelectedReport(null)}>
                 <AlertDialogContent className="max-w-3xl h-[90vh] flex flex-col">
@@ -211,6 +279,48 @@ export default function ApplicantsPage() {
             </AlertDialog>
         </div>
     );
+}
+
+function SuggestedStudentCard({ student }: { student: SuggestedStudent }) {
+    const { toast } = useToast();
+    const [status, setStatus] = useState(student.inviteStatus || 'Pending');
+
+    const handleSendInvite = () => {
+        // In a real app, this would trigger a notification to the student.
+        // We'll simulate it with a toast and state change.
+        toast({
+            title: "Invite Sent!",
+            description: `An invitation has been sent to ${student.name}.`
+        });
+        setStatus('Invited');
+    };
+    
+    return (
+        <div className={cn(
+            "p-3 rounded-lg border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all",
+            "bg-gradient-to-r from-background to-secondary/30",
+            student.matchScore > 85 && "from-primary/10 to-secondary/30 shadow-sm shadow-primary/20",
+        )}>
+            <div className="flex items-center gap-4 flex-grow">
+                <div className="flex flex-col items-center justify-center p-2 rounded-md bg-primary/10 w-16 h-16">
+                    <span className="text-2xl font-bold text-primary">{student.matchScore}</span>
+                    <span className="text-xs text-primary/80 -mt-1">Score</span>
+                </div>
+                <div>
+                    <h4 className="font-semibold">{student.name}</h4>
+                    <p className="text-sm text-muted-foreground italic">"{student.justification}"</p>
+                </div>
+            </div>
+             <div className="flex items-center gap-2 w-full sm:w-auto flex-shrink-0">
+                <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                    <Eye className="mr-2 h-4 w-4"/> View Profile
+                </Button>
+                <Button onClick={handleSendInvite} size="sm" disabled={status === 'Invited'} className="w-full sm:w-auto">
+                    <Send className="mr-2 h-4 w-4"/> {status === 'Invited' ? 'Invited' : 'Send Invite'}
+                </Button>
+            </div>
+        </div>
+    )
 }
 
 function ApplicantCard({ applicant, onShowReport }: { applicant: RankedApplicantProfile; onShowReport: (result: InterviewResult) => void; }) {

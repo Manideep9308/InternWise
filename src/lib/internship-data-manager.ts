@@ -2,6 +2,7 @@
 'use client';
 
 import type { Internship, StudentProfile, InterviewResult, Message, StudentApplication } from './types';
+import { mockStudentProfile, mockInternships } from './mock-data';
 
 const INTERNSHIPS_STORAGE_KEY = 'internships';
 const APPLICATIONS_STORAGE_KEY = 'applications';
@@ -37,6 +38,12 @@ const setInStorage = <T>(key: string, value: T) => {
 
 export const getInternships = (): Internship[] => {
   const internships = getFromStorage<Internship[]>(INTERNSHIPS_STORAGE_KEY, []);
+  if (internships.length === 0 && typeof window !== 'undefined') {
+      // Pre-seed with mock data if local storage is empty
+      setInStorage(INTERNSHIPS_STORAGE_KEY, mockInternships);
+      return mockInternships;
+  }
+  
   const allApplications = getFromStorage<Record<string, StudentProfile[]>>(APPLICATIONS_STORAGE_KEY, {});
 
   // Dynamically update applicant counts to ensure data is always fresh
@@ -167,4 +174,54 @@ export const saveInterviewResult = (
 export const getInterviewResult = (internshipId: string, studentEmail: string): InterviewResult | undefined => {
     const results = getFromStorage<InterviewResult[]>(INTERVIEW_RESULTS_STORAGE_KEY, []);
     return results.find(r => r.internshipId === internshipId && r.studentEmail === studentEmail);
+};
+
+// --- Student Profile Management (for simulation) ---
+export const getAllStudentProfiles = (): StudentProfile[] => {
+    // This is a simulation. In a real app, this would fetch from a database.
+    // For now, we'll generate a few mock profiles plus the currently logged-in user's profile.
+    const loggedInUserProfile = getFromStorage<StudentProfile | null>('studentProfile', null);
+
+    const mockProfiles: StudentProfile[] = [
+        {
+            name: 'Priya Sharma',
+            email: 'priya.sharma@example.com',
+            education: 'M.S. in Data Science, New York University (2024)',
+            skills: 'Python, Pandas, Scikit-learn, SQL, Tableau, Machine Learning',
+            about: 'Data science enthusiast with a passion for finding stories in data. Experience in building predictive models and creating data visualizations.',
+            projects: 'Built a sentiment analysis tool for movie reviews; created a sales forecasting model for a retail dataset.',
+        },
+        {
+            name: 'Ben Carter',
+            email: 'ben.carter@example.com',
+            education: 'B.A. in Design, Rhode Island School of Design (2025)',
+            skills: 'Figma, Sketch, Adobe Creative Suite, Prototyping, User Research, UI/UX Design',
+            about: 'A creative and user-centric designer focused on crafting intuitive and beautiful digital experiences. Loves solving complex problems with simple design.',
+            projects: 'Redesigned a mobile banking app to improve user flow; created a complete design system for a startup website.',
+        },
+        {
+            name: 'Carlos Gomez',
+            email: 'carlos.gomez@example.com',
+            education: 'B.Eng in Software Engineering, University of Waterloo (2024)',
+            skills: 'Node.js, Express, AWS, Docker, Kubernetes, PostgreSQL, Microservices',
+            about: 'Backend developer with a strong foundation in building scalable and reliable systems. Fascinated by distributed systems and cloud architecture.',
+            projects: 'Developed a real-time chat application using WebSockets; built a microservices-based e-commerce backend.',
+        },
+         {
+            name: 'Samantha Lee',
+            email: 'samantha.lee@example.com',
+            education: 'B.Sc. in Computer Science, Georgia Institute of Technology (2025)',
+            skills: 'React, Next.js, GraphQL, TypeScript, Cypress, Storybook',
+            about: 'Detail-oriented frontend developer who enjoys building pixel-perfect user interfaces and interactive web applications.',
+            projects: 'Contributed to an open-source component library; built a data dashboard with complex visualizations using D3.js and React.',
+        }
+    ];
+
+    if (loggedInUserProfile && loggedInUserProfile.email) {
+        // Ensure the logged-in user is in the list and there are no duplicates
+        const allProfiles = [loggedInUserProfile, ...mockProfiles.filter(p => p.email !== loggedInUserProfile.email)];
+        return allProfiles;
+    }
+
+    return [...mockProfiles, mockStudentProfile]; // Fallback if no one is logged in
 };

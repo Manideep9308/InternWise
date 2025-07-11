@@ -52,7 +52,7 @@ export default function PostInternshipPage() {
     }
 
     try {
-        addInternship({
+        const newInternship = addInternship({
             company: data.companyName as string,
             title: data.title as string,
             location: data.location as string,
@@ -67,11 +67,11 @@ export default function PostInternshipPage() {
 
         toast({
             title: 'Internship Posted!',
-            description: 'Your internship is now live for students to apply.',
+            description: 'Redirecting you to the new applicants page...',
         });
         
-        // Redirect to the employer dashboard after posting
-        router.push('/employer/dashboard');
+        // Redirect to the new internship's applicants page
+        router.push(`/internships/${newInternship.id}/applicants?new=true`);
 
     } catch (error) {
         console.error("Failed to post internship", error);
