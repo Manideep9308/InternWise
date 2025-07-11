@@ -15,6 +15,7 @@ import { Progress } from '@/components/ui/progress';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type RankedApplicantProfile = StudentProfile & {
     score?: number;
@@ -160,36 +161,44 @@ export default function ApplicantsPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="flex flex-col gap-4">
                                <h3 className="font-semibold">AI Summary & Feedback</h3>
-                               <div className="rounded-md border p-4 bg-secondary/50">
-                                   <div className="text-sm text-foreground whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: selectedReport?.summary.replace(/\n/g, '<br />') || '' }} />
-                               </div>
+                               <Card>
+                                 <CardContent className="p-4">
+                                   <ScrollArea className="h-full max-h-[60vh]">
+                                      <div className="text-sm text-foreground whitespace-pre-wrap pr-4" dangerouslySetInnerHTML={{ __html: selectedReport?.summary.replace(/\\n/g, '<br />').replace(/\* \*\*(.*?)\*\*:/g, '<h3>$1</h3>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/  \*/g, '<br />&bull;') || '' }} />
+                                   </ScrollArea>
+                                  </CardContent>
+                               </Card>
                             </div>
                             <div className="flex flex-col gap-4">
                                 <h3 className="font-semibold">Interview Transcript</h3>
-                                <div className="rounded-md border p-4">
-                                    <div className="space-y-4">
-                                        {selectedReport?.conversationHistory.map((message, index) => (
-                                            <div key={index} className={cn('flex items-start gap-2 text-sm', message.role === 'user' ? 'justify-end' : 'justify-start')}>
-                                            {message.role === 'assistant' && (
-                                                <Avatar className="w-6 h-6">
-                                                    <AvatarFallback className="bg-primary text-primary-foreground"><Bot size={16}/></AvatarFallback>
-                                                </Avatar>
-                                            )}
-                                            <div className={cn(
-                                                'max-w-xs rounded-lg px-3 py-2',
-                                                message.role === 'user' ? 'bg-primary text-primary-foreground rounded-br-none' : 'bg-muted rounded-bl-none'
-                                            )}>
-                                                <p className="whitespace-pre-wrap">{message.content}</p>
-                                            </div>
-                                            {message.role === 'user' && (
-                                                <Avatar className="w-6 h-6">
-                                                    <AvatarFallback><User size={16}/></AvatarFallback>
-                                                </Avatar>
-                                            )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
+                                <Card>
+                                  <CardContent className="p-4">
+                                    <ScrollArea className="h-full max-h-[60vh]">
+                                      <div className="space-y-4 pr-4">
+                                          {selectedReport?.conversationHistory.map((message, index) => (
+                                              <div key={index} className={cn('flex items-start gap-2 text-sm', message.role === 'user' ? 'justify-end' : 'justify-start')}>
+                                              {message.role === 'assistant' && (
+                                                  <Avatar className="w-6 h-6">
+                                                      <AvatarFallback className="bg-primary text-primary-foreground"><Bot size={16}/></AvatarFallback>
+                                                  </Avatar>
+                                              )}
+                                              <div className={cn(
+                                                  'max-w-xs rounded-lg px-3 py-2',
+                                                  message.role === 'user' ? 'bg-primary text-primary-foreground rounded-br-none' : 'bg-muted rounded-bl-none'
+                                              )}>
+                                                  <p className="whitespace-pre-wrap">{message.content}</p>
+                                              </div>
+                                              {message.role === 'user' && (
+                                                  <Avatar className="w-6 h-6">
+                                                      <AvatarFallback><User size={16}/></AvatarFallback>
+                                                  </Avatar>
+                                              )}
+                                              </div>
+                                          ))}
+                                      </div>
+                                    </ScrollArea>
+                                  </CardContent>
+                                </Card>
                             </div>
                         </div>
                     </div>

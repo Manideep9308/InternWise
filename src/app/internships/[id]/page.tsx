@@ -162,7 +162,7 @@ export default function InternshipDetailPage() {
               <div className="w-full md:w-auto flex-shrink-0 space-y-2">
                   {!isEmployer ? (
                     <Button size="lg" className="w-full" onClick={handleApply} disabled={hasUserApplied || isApplying}>
-                        {hasUserApplied ? <><Check className="mr-2"/> Applied</> : 'Apply Now'}
+                        {hasUserApplied ? <><Check className="mr-2"/> Applied</> : (internship.isInterviewRequired ? 'Apply via Interview' : 'Apply Now')}
                     </Button>
                   ) : (
                     <Link href={`/internships/${internship.id}/applicants`} passHref>

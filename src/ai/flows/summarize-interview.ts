@@ -20,7 +20,7 @@ const SummarizeInterviewInputSchema = z.object({
 export type SummarizeInterviewInput = z.infer<typeof SummarizeInterviewInputSchema>;
 
 const SummarizeInterviewOutputSchema = z.object({
-  summary: z.string().describe('A detailed summary of the student\'s interview performance, including strengths, weaknesses, and suggestions for improvement. Format this as markdown.'),
+  summary: z.string().describe('A detailed summary of the student\'s interview performance, including strengths, weaknesses, and suggestions for improvement. Format this as markdown, using headings, bold text, and bullet points.'),
 });
 export type SummarizeInterviewOutput = z.infer<typeof SummarizeInterviewOutputSchema>;
 
@@ -34,7 +34,7 @@ const prompt = ai.definePrompt({
   output: { schema: SummarizeInterviewOutputSchema },
   prompt: `You are an expert career advisor. Your task is to provide a detailed performance review for a student based on their mock interview transcript.
 
-  Evaluate the student's answers based on the requirements of the internship and their profile. Provide constructive feedback, highlighting both strengths and areas for improvement. Structure your feedback clearly. Use markdown for formatting (e.g., headings, bold text, bullet points).
+  Evaluate the student's answers based on the requirements of the internship and their profile. Provide constructive feedback, highlighting both strengths and areas for improvement. Structure your feedback clearly. Use markdown for formatting. Start with an overall summary. Then provide sections for "Strengths", "Areas for Improvement", and "Actionable Advice".
 
   Student Profile: {{{studentProfile}}}
   Selected Internship: {{{selectedInternship}}}
