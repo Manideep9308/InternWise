@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -23,8 +24,10 @@ export default function MyApplicationsPage() {
         if (storedProfileData) {
             const parsedProfile = JSON.parse(storedProfileData);
             setProfile(parsedProfile);
-            const studentApps = getApplicationsByStudent(parsedProfile.email);
-            setApplications(studentApps);
+            if (parsedProfile.email) {
+                const studentApps = getApplicationsByStudent(parsedProfile.email);
+                setApplications(studentApps);
+            }
         }
         setIsLoading(false);
     }, []);

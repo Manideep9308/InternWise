@@ -42,7 +42,7 @@ export function Header() {
     <Link href={href} passHref>
       <Button variant="ghost" className={cn(
         'justify-start gap-2',
-        pathname.startsWith(href) ? 'bg-primary/10 text-primary' : ''
+        pathname === href ? 'bg-primary/10 text-primary' : ''
       )}>
         <Icon className="h-4 w-4" />
         {label}
@@ -55,7 +55,7 @@ export function Header() {
       <Link href={href} passHref>
         <Button variant="ghost" className={cn(
           'w-full justify-start gap-3 text-lg py-6',
-          pathname.startsWith(href) ? 'bg-primary/10 text-primary' : ''
+          pathname === href ? 'bg-primary/10 text-primary' : ''
         )}>
           <Icon className="h-5 w-5" />
           {label}

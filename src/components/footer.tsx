@@ -34,8 +34,8 @@ export function Footer() {
                 <li><Link href="/ai-coach" className="text-foreground/70 hover:text-primary">AI Interview Coach</Link></li>
                 <li><Link href="/hiring-manager-simulator" className="text-foreground/70 hover:text-primary">Resume Review</Link></li>
                 <li><Link href="/career-path-simulator" className="text-foreground/70 hover:text-primary">Career Path</Link></li>
-                <li><Link href="/profile" className="text-foreground/70 hover:text-primary">My Profile</Link></li>
                 <li><Link href="/my-applications" className="text-foreground/70 hover:text-primary">My Applications</Link></li>
+                <li><Link href="/profile" className="text-foreground/70 hover:text-primary">My Profile</Link></li>
               </ul>
             </div>
             <div>
