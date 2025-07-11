@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetClose } from './ui/sheet';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Separator } from './ui/separator';
+import { useState, useEffect } from 'react';
 
 const studentNavLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -27,8 +28,13 @@ const employerNavLinks = [
 
 export function Header() {
   const pathname = usePathname();
+  const [isClient, setIsClient] = useState(false);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
-  const isEmployerRoute = pathname.startsWith('/employer') || pathname.startsWith('/post-internship');
+  const isEmployerRoute = isClient && (pathname.startsWith('/employer') || pathname.startsWith('/post-internship'));
 
   const navLinks = isEmployerRoute ? employerNavLinks : studentNavLinks;
 
