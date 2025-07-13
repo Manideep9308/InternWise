@@ -1,5 +1,7 @@
 import { AiCoachLoader } from '@/components/ai-coach-loader';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Bot } from 'lucide-react';
+import { Suspense } from 'react';
 
 export default function AiCoachPage() {
   return (
@@ -15,8 +17,18 @@ export default function AiCoachPage() {
       </div>
 
       <div className="max-w-4xl mx-auto">
-        <AiCoachLoader />
+        <Suspense fallback={<AiCoachPageSkeleton />}>
+          <AiCoachLoader />
+        </Suspense>
       </div>
     </div>
   );
+}
+
+function AiCoachPageSkeleton() {
+  return (
+    <div className="space-y-4">
+      <Skeleton className="h-[70vh] w-full" />
+    </div>
+  )
 }
