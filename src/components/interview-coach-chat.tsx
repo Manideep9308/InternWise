@@ -9,15 +9,17 @@ import { saveInterviewResult, applyForInternship } from '@/lib/internship-data-m
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardFooter, CardHeader } from './ui/card';
-import { Bot, Loader2, Send, User, Award, Volume2, Mic, MicOff } from 'lucide-react';
+import { Bot, Loader2, Send, User, Award, Volume2, Mic, MicOff, ChevronsUpDown, Check } from 'lucide-react';
 import type { Internship, StudentProfile, Message } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from './ui/command';
+
 
 interface InterviewCoachChatProps {
   studentProfile: StudentProfile;
@@ -52,6 +54,8 @@ export function InterviewCoachChat({
   const recognitionRef = useRef<any>(null);
   const wasRecordingRef = useRef(false);
   const speechTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const [isComboboxOpen, setIsComboboxOpen] = useState(false);
 
   const studentProfileString = `Name: ${studentProfile.name}, Education: ${studentProfile.education}, Skills: ${studentProfile.skills}, Projects: ${studentProfile.projects || 'N/A'}, About: ${studentProfile.about}`;
   
@@ -321,20 +325,51 @@ export function InterviewCoachChat({
     <>
       <Card className="h-[70vh] flex flex-col">
         <CardHeader className="flex flex-row items-center justify-between border-b p-4">
-          <Select 
-            onValueChange={(value) => { setSelectedInternshipId(value); handleResetChat(); }} 
-            value={selectedInternshipId || ''}
-            disabled={!!preselectedInternshipId}
-          >
-            <SelectTrigger className="w-full md:w-[350px]">
-              <SelectValue placeholder="Select an internship to practice for..." />
-            </SelectTrigger>
-            <SelectContent>
-              {internships.map(internship => (
-                <SelectItem key={internship.id} value={internship.id}>{internship.title} at {internship.company}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Popover open={isComboboxOpen} onOpenChange={setIsComboboxOpen}>
+            <PopoverTrigger asChild>
+                <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={isComboboxOpen}
+                    className="w-full md:w-[350px] justify-between"
+                    disabled={!!preselectedInternshipId}
+                >
+                    {selectedInternshipId
+                        ? internships.find((internship) => internship.id === selectedInternshipId)?.title
+                        : "Select an internship to practice for..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full md:w-[350px] p-0">
+                <Command>
+                    <CommandInput placeholder="Search internships..." />
+                    <CommandEmpty>No internship found.</CommandEmpty>
+                    <CommandList>
+                        <CommandGroup>
+                            {internships.map((internship) => (
+                                <CommandItem
+                                    key={internship.id}
+                                    value={`${internship.title} ${internship.company}`}
+                                    onSelect={() => {
+                                        setSelectedInternshipId(internship.id);
+                                        handleResetChat();
+                                        setIsComboboxOpen(false);
+                                    }}
+                                >
+                                    <Check
+                                        className={cn(
+                                            "mr-2 h-4 w-4",
+                                            selectedInternshipId === internship.id ? "opacity-100" : "opacity-0"
+                                        )}
+                                    />
+                                    {internship.title}
+                                </CommandItem>
+                            ))}
+                        </CommandGroup>
+                    </CommandList>
+                </Command>
+            </PopoverContent>
+          </Popover>
           <Button onClick={handleEndInterview} disabled={isLoading || isSummarizing || messages.length === 0} variant="outline">
             {isSummarizing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Summarizing...</> : <><Award className="mr-2 h-4 w-4"/>Get Feedback</>}
           </Button>
