@@ -343,8 +343,8 @@ export function InterviewCoachChat({
             <PopoverContent className="w-full md:w-[350px] p-0">
                 <Command>
                     <CommandInput placeholder="Search internships..." />
-                    <CommandEmpty>No internship found.</CommandEmpty>
                     <CommandList>
+                        <CommandEmpty>No internship found.</CommandEmpty>
                         <CommandGroup>
                             {internships.map((internship) => (
                                 <CommandItem
@@ -376,7 +376,7 @@ export function InterviewCoachChat({
         </CardHeader>
         <CardContent className="flex-grow overflow-hidden">
           <ScrollArea className="h-full pr-4" ref={scrollAreaRef}>
-            <div className="space-y-6">
+            <div className="space-y-6 py-6">
               {!selectedInternshipId ? (
                   <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
                       <Bot className="h-12 w-12 mb-4"/>
@@ -478,7 +478,7 @@ export function InterviewCoachChat({
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <ScrollArea className="h-[50vh] pr-6 rounded-md border p-4">
-                <div className="text-sm text-foreground whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: summary.replace(/\n/g, '<br />') }} />
+                <div className="text-sm text-foreground whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: summary.replace(/\* \*\*(.*?)\*\*:/g, '<h3>$1</h3>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br />').replace(/  \*/g, '<br />&bull;') }} />
             </ScrollArea>
             <AlertDialogFooter>
                 <AlertDialogAction onClick={handleResetChat}>
