@@ -69,7 +69,12 @@ const hiringManagerSimulatorFlow = ai.defineFlow(
     outputSchema: HiringManagerSimulatorOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    try {
+        const {output} = await prompt(input);
+        return output!;
+    } catch (e) {
+        console.error("Error in hiringManagerSimulatorFlow: ", e);
+        throw new Error("The AI service failed to simulate a hiring manager. Please check your API key and try again.");
+    }
   }
 );

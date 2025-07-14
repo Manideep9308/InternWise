@@ -78,7 +78,15 @@ const rankApplicantsFlow = ai.defineFlow(
     outputSchema: RankApplicantsOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
-    return output!;
+    try {
+      if (input.studentProfiles.length === 0) {
+        return { rankedApplicants: [] };
+      }
+      const { output } = await prompt(input);
+      return output!;
+    } catch (e) {
+        console.error("Error in rankApplicantsFlow: ", e);
+        throw new Error("The AI service failed to rank applicants. Please check your API key and try again.");
+    }
   }
 );

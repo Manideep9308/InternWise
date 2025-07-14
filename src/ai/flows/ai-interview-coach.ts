@@ -63,7 +63,12 @@ const interviewCoachFlow = ai.defineFlow(
     outputSchema: InterviewCoachOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    try {
+      const {output} = await prompt(input);
+      return output!;
+    } catch (e) {
+        console.error("Error in interviewCoachFlow: ", e);
+        throw new Error("The AI coach failed to respond. Please check your API key and try again.");
+    }
   }
 );

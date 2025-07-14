@@ -56,7 +56,12 @@ const analyzeResumeFlow = ai.defineFlow(
     outputSchema: AnalyzeResumeOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    try {
+        const {output} = await prompt(input);
+        return output!;
+    } catch (e) {
+        console.error("Error in analyzeResumeFlow: ", e);
+        throw new Error("The AI service failed to analyze the resume. Please check your API key and try again.");
+    }
   }
 );

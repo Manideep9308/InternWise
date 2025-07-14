@@ -49,7 +49,12 @@ const generateCoverLetterFlow = ai.defineFlow(
     outputSchema: GenerateCoverLetterOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    try {
+        const {output} = await prompt(input);
+        return output!;
+    } catch (e) {
+        console.error("Error in generateCoverLetterFlow: ", e);
+        throw new Error("The AI service failed to generate a cover letter. Please check your API key and try again.");
+    }
   }
 );

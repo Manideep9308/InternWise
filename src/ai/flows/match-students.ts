@@ -83,8 +83,15 @@ const matchStudentsFlow = ai.defineFlow(
     outputSchema: MatchStudentsOutputSchema,
   },
   async (input) => {
-    // In a real scenario, you might have more complex logic to filter students before sending to the LLM.
-    const { output } = await prompt(input);
-    return output!;
+    try {
+        if (input.studentProfiles.length === 0) {
+            return { matchedStudents: [] };
+        }
+        const { output } = await prompt(input);
+        return output!;
+    } catch (e) {
+        console.error("Error in matchStudentsFlow: ", e);
+        throw new Error("The AI service failed to match students. Please check your API key and try again.");
+    }
   }
 );

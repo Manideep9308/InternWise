@@ -53,7 +53,15 @@ const summarizeInterviewFlow = ai.defineFlow(
     outputSchema: SummarizeInterviewOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
-    return output!;
+    try {
+        if (input.conversationHistory.length === 0) {
+            return { summary: 'No conversation was recorded, so no summary could be generated.'};
+        }
+        const { output } = await prompt(input);
+        return output!;
+    } catch (e) {
+        console.error("Error in summarizeInterviewFlow: ", e);
+        throw new Error("The AI service failed to summarize the interview. Please check your API key and try again.");
+    }
   }
 );
