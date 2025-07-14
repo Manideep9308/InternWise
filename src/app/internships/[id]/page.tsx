@@ -23,7 +23,7 @@ export default function InternshipDetailPage() {
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [hasUserApplied, setHasUserApplied] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
-  const [isEmployer, setIsEmployer] = useState(false);
+  const [isEmployerViewing, setIsEmployerViewing] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -31,12 +31,11 @@ export default function InternshipDetailPage() {
     const foundInternship = getInternshipById(id);
     setInternship(foundInternship);
     
-    // Check if logged in as an employer
-    if (localStorage.getItem('employerCompany')) {
-        setIsEmployer(true);
-    }
+    // Check if an employer is logged in
+    const employerCompany = typeof window !== 'undefined' ? localStorage.getItem('employerCompany') : null;
+    setIsEmployerViewing(!!employerCompany);
     
-    const storedProfileData = localStorage.getItem('studentProfile');
+    const storedProfileData = typeof window !== 'undefined' ? localStorage.getItem('studentProfile') : null;
     if (storedProfileData) {
       try {
         const parsedProfile = JSON.parse(storedProfileData);
@@ -160,7 +159,7 @@ export default function InternshipDetailPage() {
                 </div>
               </div>
               <div className="w-full md:w-auto flex-shrink-0 space-y-2">
-                  {isEmployer ? (
+                  {isEmployerViewing ? (
                     <Link href={`/internships/${internship.id}/applicants`} passHref>
                         <Button variant="outline" className="w-full"><Eye className="mr-2"/> View Applicants</Button>
                     </Link>
