@@ -71,7 +71,7 @@ const careerPathSimulatorFlow = ai.defineFlow(
     } catch(e) {
       console.error("Error in careerPathSimulatorFlow:", e);
       // Re-throw the error to be caught by the calling component in the UI
-      throw new Error("The AI service is currently unavailable. Please try again later.");
+      throw new Error("The AI service failed to respond. This is likely due to an invalid or missing API key in your environment settings. Please check your key and try again.");
     }
   }
 );
