@@ -23,19 +23,16 @@ export default function InternshipDetailPage() {
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [hasUserApplied, setHasUserApplied] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
-  const [isEmployerViewing, setIsEmployerViewing] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
+    setIsClient(true);
     if (!id) return;
     const foundInternship = getInternshipById(id);
     setInternship(foundInternship);
     
-    // Check if an employer is logged in
-    const employerCompany = typeof window !== 'undefined' ? localStorage.getItem('employerCompany') : null;
-    setIsEmployerViewing(!!employerCompany);
-    
-    const storedProfileData = typeof window !== 'undefined' ? localStorage.getItem('studentProfile') : null;
+    const storedProfileData = localStorage.getItem('studentProfile');
     if (storedProfileData) {
       try {
         const parsedProfile = JSON.parse(storedProfileData);
@@ -87,7 +84,7 @@ export default function InternshipDetailPage() {
     setIsApplying(false);
   };
 
-  if (internship === undefined) {
+  if (internship === undefined || !isClient) {
       return (
         <div className="bg-secondary">
           <div className="container mx-auto py-12 px-4">
@@ -127,6 +124,8 @@ export default function InternshipDetailPage() {
   if (internship === null) {
     notFound();
   }
+  
+  const isEmployerViewing = isClient && localStorage.getItem('employerCompany');
 
   return (
     <div className="bg-secondary">
