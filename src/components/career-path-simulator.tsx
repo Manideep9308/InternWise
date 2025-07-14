@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -43,7 +44,7 @@ export function CareerPathSimulator({ studentProfile }: CareerPathSimulatorProps
       console.error('Error in career path simulation:', error);
       toast({
         title: 'Error',
-        description: 'Failed to run the simulation. Please try again.',
+        description: 'Failed to run the simulation. Please check your API key and try again.',
         variant: 'destructive',
       });
     }
