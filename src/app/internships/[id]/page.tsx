@@ -156,7 +156,7 @@ export default function InternshipDetailPage() {
                 </div>
               </div>
               <div className="w-full md:w-auto flex-shrink-0 space-y-2">
-                  {isClient && localStorage.getItem('employerCompany') ? (
+                  {isClient && !!localStorage.getItem('employerCompany') ? (
                     <Link href={`/internships/${internship.id}/applicants`} passHref>
                         <Button variant="outline" className="w-full"><Eye className="mr-2"/> View Applicants</Button>
                     </Link>
