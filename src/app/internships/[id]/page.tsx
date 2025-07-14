@@ -156,16 +156,10 @@ export default function InternshipDetailPage() {
                 </div>
               </div>
               <div className="w-full md:w-auto flex-shrink-0 space-y-2">
-                  {isClient && !!localStorage.getItem('employerCompany') ? (
-                    <Link href={`/internships/${internship.id}/applicants`} passHref>
-                        <Button variant="outline" className="w-full"><Eye className="mr-2"/> View Applicants</Button>
-                    </Link>
-                  ) : (
-                    <Button size="lg" className="w-full" onClick={handleApply} disabled={hasUserApplied || isApplying}>
-                        {hasUserApplied ? <><Check className="mr-2"/> Applied</> : (internship.isInterviewRequired ? 'Apply via Interview' : 'Apply Now')}
-                    </Button>
-                  )}
-                  <p className="text-xs text-muted-foreground text-center">Posted {internship.postedDate}</p>
+                <Button size="lg" className="w-full" onClick={handleApply} disabled={hasUserApplied || isApplying}>
+                    {hasUserApplied ? <><Check className="mr-2"/> Applied</> : (internship.isInterviewRequired ? 'Apply via Interview' : 'Apply Now')}
+                </Button>
+                <p className="text-xs text-muted-foreground text-center">Posted {internship.postedDate}</p>
               </div>
             </div>
           </div>
