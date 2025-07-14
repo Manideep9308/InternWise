@@ -124,8 +124,6 @@ export default function InternshipDetailPage() {
   if (internship === null) {
     notFound();
   }
-  
-  const isEmployerViewing = isClient && !!localStorage.getItem('employerCompany');
 
   return (
     <div className="bg-secondary">
@@ -158,7 +156,7 @@ export default function InternshipDetailPage() {
                 </div>
               </div>
               <div className="w-full md:w-auto flex-shrink-0 space-y-2">
-                  {isEmployerViewing ? (
+                  {isClient && localStorage.getItem('employerCompany') ? (
                     <Link href={`/internships/${internship.id}/applicants`} passHref>
                         <Button variant="outline" className="w-full"><Eye className="mr-2"/> View Applicants</Button>
                     </Link>
