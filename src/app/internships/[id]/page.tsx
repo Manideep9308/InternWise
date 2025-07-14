@@ -24,7 +24,6 @@ export default function InternshipDetailPage() {
   const [hasUserApplied, setHasUserApplied] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
   const [isClient, setIsClient] = useState(false);
-  const [isEmployerViewing, setIsEmployerViewing] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -45,11 +44,6 @@ export default function InternshipDetailPage() {
         console.error("Failed to parse student profile", e);
       }
     }
-    
-    if (localStorage.getItem('employerCompany')) {
-        setIsEmployerViewing(true);
-    }
-
   }, [id]);
 
   const handleApply = () => {
@@ -131,6 +125,8 @@ export default function InternshipDetailPage() {
     notFound();
   }
   
+  const isEmployerViewing = isClient && !!localStorage.getItem('employerCompany');
+
   return (
     <div className="bg-secondary">
       <div className="container mx-auto py-12 px-4">
